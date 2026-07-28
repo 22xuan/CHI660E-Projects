@@ -16,3 +16,4 @@
 *.fls
 *.fdb_latexmk
 .DS_Store
+data
