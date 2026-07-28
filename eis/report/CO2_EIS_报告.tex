@@ -1,0 +1,298 @@
+%!TEX program = xelatex
+\documentclass[12pt,a4paper]{ctexart}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,booktabs,graphicx,hyperref,caption,enumitem}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue}
+
+\title{\textbf{低合金钢 CO$_2$ 腐蚀 EIS 分析}\\\small R(Q(RW)) 等效电路建模}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle\thispagestyle{empty}
+
+\begin{center}\small
+\textbf{仪器：} Bio-Logic SP-200 \quad\textbf{技术：} Potentio EIS (PEIS)\\
+\textbf{数据来源：} De Motte et al., \textit{Corrosion Science}, 2020, \textbf{172}, 108666\\
+\textbf{数据集：} Mendeley Data yvdggv253v/1 (CC BY 4.0)
+\end{center}
+\vspace{1cm}
+\tableofcontents\newpage
+
+% ======================================================================
+\section{摘要}
+
+本报告基于已发表的 Bio-Logic SP-200 电化学阻抗谱（EIS）数据，对低合金钢
+在 CO$_2$ 饱和盐水中的腐蚀行为进行等效电路分析。
+数据采用 R(Q(RW)) 模型（Randles 电路 + 有限 Warburg 扩散）进行
+复数非线性最小二乘（CNLS）拟合。
+在 80\,\textdegree C、pH\,6.0 和 pH\,6.6 条件下：
+pH\,6.6 的极化电阻（$R_{total} \approx 6550$ $\Omega$$\cdot$cm$^2$）
+约为 pH\,6.0（$\approx 3660$ $\Omega$$\cdot$cm$^2$）的 1.8 倍，
+表明较高 pH 促进生成更具保护性的 FeCO$_3$ 腐蚀产物层。
+拟合优度受限于腐蚀表面极度不均匀导致的容抗弧严重压扁（$n < 0.6$），
+但提取的 Rs 和 $R_{total}$ 量级与物理预期一致。
+
+\newpage
+
+% ======================================================================
+\section{引言}
+
+电化学阻抗谱（EIS）是研究金属腐蚀行为最常用的原位电化学技术之一。
+通过在宽频率范围内测量电极的交流阻抗响应，可以分离溶液电阻（Rs）、
+界面电荷转移电阻（$R_{ct}$）和扩散阻抗（$Z_W$）等物理过程\cite{orazem2008}。
+
+低合金钢是高放核废料深地质处置容器（法国 ANDRA CIGEO 项目）的候选材料。
+在含 CO$_2$ 的地下水中，钢表面会生成 FeCO$_3$ 腐蚀产物层，
+其保护性决定容器的长期耐蚀寿命\cite{demotte2020}。
+
+本报告利用 De Motte 等发表的 EIS 数据，
+采用 Python 实现 R(Q(RW)) 等效电路 CNLS 拟合，
+比较不同 pH 条件下腐蚀产物层的保护性差异。
+
+% ======================================================================
+\section{实验部分}
+
+\subsection{数据来源}
+
+\begin{table}[h]\centering
+\caption{实验条件}\begin{tabular}{ll}
+\toprule
+参数 & 数值 \\
+\midrule
+电极材料 & 低合金钢（ANDRA CIGEO 项目）\\
+电极面积 & 6.4 cm$^2$\\
+温度 & 80\,\textdegree C\\
+电解液 & CO$_2$ 饱和盐水（NaCl + NaHCO$_3$）\\
+pH & 6.0 和 6.6\\
+仪器 & Bio-Logic SP-200\\
+技术 & Potentio EIS (PEIS)\\
+频率范围 & 0.01 Hz -- 30 kHz\\
+扰动幅度 & 10 mV\\
+数据协议 & CC BY 4.0\\
+\bottomrule
+\end{tabular}
+\label{tab:conditions}
+\end{table}
+
+\subsection{数据处理}
+
+原始数据为 Bio-Logic EC-Lab 的 \texttt{.mpt} 格式（ASCII），
+采用欧洲数字格式（逗号为小数点）。Python 解析脚本自动转换格式、
+按电极面积（6.4 cm$^2$）归一化阻抗，并做对数降采样至 $\sim$80 点以减少计算量。
+
+\newpage
+
+% ======================================================================
+\section{理论背景}
+
+\subsection{Nyquist 与 Bode 图}
+
+EIS 数据常用两种图形表示：
+
+\begin{itemize}[leftmargin=1.5cm]
+  \item \textbf{Nyquist 图}：$-Z_{im}$ vs $Z_{re}$。理想 Randles 电路为一个半圆，
+  高频截距 = Rs，低频截距 = Rs + $R_{ct}$
+  \item \textbf{Bode 图}：$\log|Z|$ 和 $\varphi$ vs $\log f$。
+  高频平台 = Rs，低频平台 = Rs + $R_{ct}$，相位角峰反映时间常数
+\end{itemize}
+
+\subsection{R(Q(RW)) 等效电路}
+
+\begin{equation}
+Z(\omega) = R_s + \frac{1}{Q_1(j\omega)^{n_1} + \frac{1}{R_1 + Z_W(\omega)}}
+\end{equation}
+
+其中 CPE（常相位元件）替代纯电容：$Z_{CPE} = 1/[Q(j\omega)^n]$，$n \rightarrow 1$ 为理想电容，
+$n < 1$ 反映表面不均匀性。
+
+有限 Warburg 扩散阻抗：
+
+\begin{equation}
+Z_W(\omega) = W \cdot (j\omega)^{-P}
+\end{equation}
+
+$P = 0.5$ 对应经典半无限扩散（45\textdegree{} Nyquist 尾），$0.3 < P < 0.7$ 对应有限扩散。
+
+\subsection{参数物理意义}
+
+\begin{table}[h]\centering
+\caption{R(Q(RW)) 模型参数}\begin{tabular}{cll}
+\toprule
+参数 & 单位 & 物理含义 \\
+\midrule
+$R_s$ & $\Omega\!\cdot\!$cm$^2$ & 溶液电阻（高频截距）\\
+$R_1$ & $\Omega\!\cdot\!$cm$^2$ & 电荷转移电阻（界面反应阻力）\\
+$Q_1$ & S$\cdot$s$^n/$cm$^2$ & CPE 系数（双电层电容相关）\\
+$n_1$ & -- & CPE 指数（$n \rightarrow 1$ 偏理想）\\
+$W$ & $\Omega\!\cdot\!$cm$^2$ & Warburg 系数（扩散层电阻）\\
+$P$ & -- & 扩散指数（$P=0.5$ 半无限）\\
+$R_{total}$ & $\Omega\!\cdot\!$cm$^2$ & $R_1 + W$，总极化电阻，越高耐蚀性越好\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{CNLS 拟合方法}
+
+复数非线性最小二乘（CNLS）：同时拟合阻抗实部和虚部，
+目标函数 $\chi^2 = \sum |Z_{calc} - Z_{exp}|^2 / \sigma^2$。
+
+采用两步法：
+\begin{enumerate}[leftmargin=1.5cm]
+  \item Rs 从高频（$>$\,1\,kHz）Zre 直接读取（物理意义最确定）
+  \item $R_1, Q_1, n_1$ 拟合高频弧（$>$\,0.5\,Hz）
+  \item $W, P$ 拟合全频谱
+  \item 最终 5 参数联合精修
+\end{enumerate}
+
+加权策略：模量加权（$1/|Z|$），防止低频大阻抗点主导拟合。
+
+\newpage
+
+% ======================================================================
+\section{结果与讨论}
+
+\subsection{Nyquist 图分析}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.95\textwidth]{Fig1_Nyquist.png}
+\caption{Nyquist 图：pH 6.0 vs 6.6 对比。两个体系均呈现单一严重压扁的容抗弧（$n<0.6$），
+表明腐蚀产物层表面高度不均匀。pH 6.6 的弧直径显著更大，反映更高的极化电阻。}
+\label{fig:nyquist}
+\end{figure}
+
+\subsection{Bode 图分析}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.95\textwidth]{Fig2_Bode.png}
+\caption{Bode 图。低频 $|Z|$ 平台对应 $R_{total}$，pH 6.6 低频阻抗明显更高。
+相位角峰的频率偏移反映时间常数的变化。}
+\label{fig:bode}
+\end{figure}
+
+\subsection{R(Q(RW)) 拟合结果}
+
+\begin{table}[h]\centering
+\caption{R(Q(RW)) 拟合参数}\begin{tabular}{lcc}
+\toprule
+参数 & pH 6.6 & pH 6.0 \\
+\midrule
+$R_s$ ($\Omega\!\cdot\!$cm$^2$) & 54.1 & 90.1 \\
+$R_1$ ($\Omega\!\cdot\!$cm$^2$) & 5978 & 3599 \\
+$Q_1$ (S$\cdot$s$^n/$cm$^2$) & $1.83\times10^{-4}$ & $7.0\times10^{-5}$ \\
+$n_1$ & 0.582 & 0.765 \\
+$W$ ($\Omega\!\cdot\!$cm$^2$) & 571 & 62 \\
+$P$ & 0.8 & 0.8 \\
+\midrule
+$R_{total}$ ($\Omega\!\cdot\!$cm$^2$) & \textbf{6548} & \textbf{3661} \\
+\bottomrule
+\end{tabular}
+\label{tab:params}
+\end{table}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.85\textwidth]{Fit_pH6.6.png}
+\caption{pH 6.6 — R(Q(RW)) 拟合 Nyquist 图}
+\label{fig:fit66}
+\end{figure}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.85\textwidth]{Fit_pH6.0.png}
+\caption{pH 6.0 — R(Q(RW)) 拟合 Nyquist 图}
+\label{fig:fit60}
+\end{figure}
+
+\subsection{pH 对腐蚀产物层保护性的影响}
+
+$R_{total}$（pH\,6.6）$\approx 1.8 \times$ $R_{total}$（pH\,6.0），
+表明较高 pH 条件下形成的 FeCO$_3$ 腐蚀产物层保护性更强。
+这一趋势与 De Motte 等\cite{demotte2020}的论文结果一致：
+较高的 pH 促进 FeCO$_3$ 的过饱和度和析出速率（Fe$^{2+}$ + HCO$_3^-$ $\rightarrow$ FeCO$_3$ + H$^+$），
+形成更致密的保护层。
+
+$n_1$ 值（0.58 和 0.77）均显著偏离理想电容（$n=1$），
+表明腐蚀表面具有高度不均匀性——多孔的 FeCO$_3$ 产物层导致
+双电层在整个电极面上表现出分布式的充放电行为。
+
+$P$ 均接近上界（0.8），表明低频扩散行为不完全符合经典 Warburg（$P=0.5$），
+可能与腐蚀产物层的有限厚度和三维多孔结构有关。
+
+\subsection{拟合质量讨论}
+
+$\chi^2$ 值较高（$\sim 10^{11}$），原因包括：
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item 腐蚀表面极度非均匀（$n \ll 1$），
+  CPE 模型本身是对分布式时间常数的近似
+  \item 原始数据密度极高（$>$30,000 点/文件），
+  降采样后仍有 $\sim$60 点，单点偏差对 $\chi^2$ 贡献大
+  \item R(Q(RW)) 是 5 参数简化模型，实际体系可能包含
+  两个以上时间常数（FeCO$_3$ 层孔隙响应 + 界面电荷转移）
+\end{enumerate}
+
+\textbf{尽管 $\chi^2$ 较高，提取的 Rs 和 $R_{total}$ 量级与物理预期一致，
+能够胜任工程级别的腐蚀速率排序}（pH\,6.6 > pH\,6.0 耐蚀性）。
+精确定量分析需更复杂的等效电路（如 R(QR)(QR)）或传输线模型。
+
+\newpage
+
+% ======================================================================
+\section{结论}
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item 通过 R(Q(RW)) 等效电路 CNLS 拟合，获得 pH\,6.6 的
+  总极化电阻 $R_{total} \approx 6550$ $\Omega\!\cdot\!$cm$^2$，
+  约为 pH\,6.0（$\approx 3660$ $\Omega\!\cdot\!$cm$^2$）的 1.8 倍
+  \item 较高的 pH 促进更具保护性的 FeCO$_3$ 腐蚀产物层形成，
+  与 De Motte 等（2020）的论文结论一致
+  \item CPE 指数 $n_1 < 0.6$ 表明腐蚀产物层表面的高度非均匀性
+  \item Rs 值（54--90 $\Omega\!\cdot\!$cm$^2$）与 80\,\textdegree C 盐水电导率一致
+\end{enumerate}
+
+\newpage
+
+% ======================================================================
+\section{局限性与改进方向}
+
+\subsection{当前局限}
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{$\chi^2$ 偏高}：简单 R(Q(RW)) 模型不能完全拟合高度非均匀表面的 EIS 响应。
+  参数 $R_{total}$ 量级可靠，但精确定量值和个别参数（$W$、$P$）可能受模型简化影响
+  \item \textbf{等效电路不唯一}：不同电路（R(QR)、R(Q(RW))、R(QR)(QR)）
+  可能给出相似的 Nyquist 视觉拟合，电路选择依赖物理合理性判断
+  \item \textbf{无 LPR 验证}：极化电阻未通过线性极化（LPR）独立验证（数据集中虽有 LPR 文件但未纳入分析）
+  \item \textbf{电极面积不确定}：面积 6.4 cm$^2$ 来自文件名，
+  EC-Lab 头文件记录为 0.001 cm$^2$（占位符），实际有效面积可能因局部腐蚀偏离
+\end{enumerate}
+
+\subsection{建议改进}
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item 采用 R(QR)(QR) 双层模型（7 参数），分离 FeCO$_3$ 产物层孔隙电阻和界面电荷转移电阻
+  \item 结合 LPR 数据验证 $R_{total}$ 值
+  \item 使用 ZsimpWin 或 ZView 等商业软件交叉验证拟合结果
+  \item 对数据集中的不同腐蚀时间点做多时刻对比分析
+\end{enumerate}
+
+\newpage
+
+% ======================================================================
+\begin{thebibliography}{5}
+
+\bibitem{demotte2020}
+R.~De~Motte, E.~Basilico, R.~Mingant, J.~Kittel, F.~Ropital, P.~Combrade,
+S.~Necib, V.~Deydier, D.~Crusset, S.~Marcelin,
+``A study by electrochemical impedance spectroscopy and surface analysis of
+corrosion product layers formed during CO$_2$ corrosion of low alloy steel,''
+\textit{Corrosion Science}, 2020, \textbf{172}, 108666.
+DOI: \href{https://doi.org/10.1016/j.corsci.2020.108666}{10.1016/j.corsci.2020.108666}
+
+\bibitem{orazem2008}
+M.~E.~Orazem, B.~Tribollet,
+\textit{Electrochemical Impedance Spectroscopy},
+John Wiley \& Sons, 2008.
+
+\end{thebibliography}
+
+\end{document}
