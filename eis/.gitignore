@@ -4,4 +4,3 @@ output/tables/
 data/
 __pycache__/
 *.pyc
-qa/

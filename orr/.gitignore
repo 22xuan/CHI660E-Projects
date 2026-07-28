@@ -28,4 +28,3 @@ __pycache__/
 # 系统
 .DS_Store
 report/*.pdf
-qa/
