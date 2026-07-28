@@ -11,3 +11,5 @@ jobs:
         run: pip install -r orr/requirements.txt && cd orr && python3 tests/test_parse.py && python3 tests/test_kl.py
       - name: Test RDE
         run: pip install -r rde-kinetics/requirements.txt && cd rde-kinetics && python3 tests/test_levich.py
+      - name: Test EIS
+        run: pip install -r eis/requirements.txt && cd eis && python3 tests/test_parse.py
