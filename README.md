@@ -1,24 +1,39 @@
 # CHI660E 电化学数据分析项目集
 
+[![Tests](https://github.com/22xuan/CHI660E-Projects/actions/workflows/test.yml/badge.svg)](https://github.com/22xuan/CHI660E-Projects/actions)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue)]()
+[![MIT](https://img.shields.io/badge/license-MIT-green)]()
+
 基于 CHI660E 电化学工作站的 Python 自动化数据分析流水线。
+
+```mermaid
+flowchart LR
+    TXT["CHI660E TXT"] --> Parse["parse_chi660e.py"]
+    Parse --> CSV["all_data.csv"]
+    CSV --> Levich["Levich: D_O, D_R"]
+    CSV --> KL["K-L: i_k"]
+    KL --> Tafel["Tafel: alpha, i0"]
+    Levich --> Figs["Figures"]
+    Tafel --> Figs
+    Figs --> LaTeX["xelatex"]
+    LaTeX --> PDF["Report PDF"]
+```
 
 ## 项目
 
 ### [ORR-RDE 氧还原分析](orr/)
 
 催化剂的氧还原反应（ORR）性能分析：
-- Koutecky-Levich 电子转移数（$n$）、Tafel 动力学、iR 补偿
+- Koutecky-Levich 电子转移数、Tafel 动力学、iR 补偿
 - Co$_3$O$_4$/C vs 20% Pt/C，304/316 不锈钢电极
-- 4 组独立操作者跨操作者可复现性
-- LaTeX 学术报告（含文献对比与局限性分析）
+- [报告 (Markdown)](orr/report/ORR_RDE_分析报告.md)
 
 ### [RDE 动力学参数测定](rde-kinetics/)
 
 旋转圆盘电极测定 Fe(CN)$_6^{3-/4-}$ 氧化还原体系动力学参数：
-- Levich 分析 → 扩散系数 $D_{\text{O}}$, $D_{\text{R}}$
-- K-L 分析 → 动力学电流 $i_k$
-- Tafel 外推 → 传递系数 $\alpha$, 交换电流 $i_0$
-- Pt 盘电极，4 组独立操作者
+- Levich 分析 → 扩散系数 + 基线扣除 + 误差传播
+- K-L 分析 → 动力学电流、Tafel 外推 → 传递系数
+- [报告 (Markdown)](rde-kinetics/report/RDE_分析报告.md)
 
 ## 快速开始
 
