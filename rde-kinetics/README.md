@@ -31,9 +31,10 @@ rde-kinetics/
 ├── scripts/
 │   ├── common.py            # 公共函数 (load_params, angular_velocity)
 │   ├── parse_chi660e.py      # Tafel Plot 3列格式解析
-│   ├── levich_analysis.py    # Levich分析 → D_O, D_R
+│   ├── levich_analysis.py    # Levich分析 → D_O, D_R (含基线扣除)
 │   ├── kl_analysis.py        # 浓度校准 + K-L + Tafel
-│   └── generate_figures.py   # matplotlib 图表
+│   ├── generate_figures.py   # matplotlib 图表
+│   └── error_analysis.py     # 误差传播分析
 ├── tests/
 │   └── test_levich.py
 ├── report/
@@ -56,8 +57,9 @@ bash run_all.sh
 
 ## 已知局限
 
-- D_R 偏低 34%：阳极极限电流平台不完整
+- D_R 偏低 34%：阳极极限电流平台不完整（误差传播证实非 c*/A/ν 误差）
 - α 偏高：过电位选区偏低，反反应贡献
+- 基线扣除后 D 值变化 < 0.01%，排除背景电流为主要因素
 - 4 组数据大部分转速下一致（CHI660E 导出精度）
 
 ## 依赖

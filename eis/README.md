@@ -1,7 +1,7 @@
 # EIS 分析 — 低合金钢 CO₂ 腐蚀
 
 基于 Bio-Logic SP-200 电化学阻抗谱（EIS）数据，
-对低合金钢在 CO₂ 饱和盐水（80°C, pH 6.0/6.6）中的腐蚀行为进行分析。
+对低合金钢在 CO₂ 饱和盐水（80°C, pH 6.0/6.6）中的腐蚀行为进行 R(Q(RW)) 等效电路分析。
 
 ## 数据来源
 
@@ -24,22 +24,33 @@
 
 ## 分析方法
 
-### 等效电路：Randles R(QR)
+### 等效电路：R(Q(RW))
 
 ```
-Rs — (CPE // Rp)
+Rs — CPE1 // (R1 + Warburg(Z_W))
 ```
 
 | 元件 | 含义 |
 |------|------|
 | Rs | 溶液电阻 |
-| Rp | 极化电阻（电荷转移电阻），越高耐蚀性越好 |
-| CPE-Q | 常相位元件系数，替代理想电容 |
-| CPE-n | 指数（n→1 偏理想电容，n<1 反映表面不均匀） |
+| R1 | 电荷转移电阻 |
+| CPE1 (Q1, n1) | 界面非理想电容（n<1 反映表面不均匀） |
+| W, P | Warburg 扩散阻抗（P=0.5 半无限扩散） |
 
 ### CNLS 拟合
 
-复数非线性最小二乘（Complex Nonlinear Least Squares），同时拟合实部和虚部，采用模量加权（1/|Z|）平衡高频和低频数据点的影响。
+复数非线性最小二乘：分步拟合（Rs 固定 → R(QR) 初值 → +Warburg 精修），
+模量加权（1/|Z|），`scipy.optimize.curve_fit`。
+
+## 拟合结果
+
+| 参数 | pH 6.6 | pH 6.0 |
+|------|--------|--------|
+| Rs (Ω·cm²) | 54.1 | 90.1 |
+| R_total (Ω·cm²) | **6,548** | **3,661** |
+| n1 | 0.582 | 0.765 |
+
+pH 6.6 的 R_total 约为 pH 6.0 的 1.8 倍，较高 pH 促进更具保护性的 FeCO₃ 腐蚀产物层。
 
 ## 项目结构
 
@@ -47,14 +58,19 @@ Rs — (CPE // Rp)
 eis/
 ├── params.yaml          # 实验参数
 ├── run_all.sh
+├── requirements.txt
 ├── scripts/
 │   ├── parse_mpt.py     # Bio-Logic .mpt 解析（欧洲逗号格式）
 │   ├── plot_eis.py      # Nyquist + Bode 图
-│   └── circuit_fit.py   # Randles R(QR) CNLS 拟合
-├── output/
-│   ├── figures/         # Nyquist, Bode, Fit 图
-│   └── tables/          # 拟合参数表
-└── data -> symlink
+│   └── circuit_fit.py   # R(Q(RW)) CNLS 拟合
+├── tests/
+│   └── test_parse.py    # 3 项测试（逗号转换 + 解析 + 面积归一化）
+├── report/
+│   ├── CO2_EIS_报告.pdf # LaTeX 报告 (768K)
+│   ├── CO2_EIS_报告.tex
+│   └── CO2_EIS_报告.md
+└── output/
+    ├── processed/  figures/  tables/
 ```
 
 ## 快速开始
@@ -63,7 +79,14 @@ eis/
 bash run_all.sh
 ```
 
+## 已知局限
+
+- 简单 R(Q(RW)) 模型 χ²≈10¹¹，精确定量需双层模型 R(QR)(QR)
+- 电极面积 6.4 cm² 来自文件名，EC-Lab 头文件为占位符
+- 无 LPR 数据独立验证 R_total
+
 ## 参考文献
 
-1. De Motte, R. et al. "A study by electrochemical impedance spectroscopy and surface analysis of corrosion product layers formed during CO₂ corrosion of low alloy steel." *Corrosion Science*, 2020, **172**, 108666.
-2. Orazem, M.E. & Tribollet, B. *Electrochemical Impedance Spectroscopy*. Wiley, 2008.
+1. De Motte et al., *Corrosion Science*, 2020, **172**, 108666
+2. Orazem & Tribollet, *Electrochemical Impedance Spectroscopy*, Wiley, 2008
+3. Hsu & Mansfeld, *Corrosion*, 2001, **57**(9), 747–748

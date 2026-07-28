@@ -8,15 +8,21 @@
 
 ```mermaid
 flowchart LR
-    TXT["CHI660E TXT"] --> Parse["parse_chi660e.py"]
-    Parse --> CSV["all_data.csv"]
-    CSV --> Levich["Levich: D_O, D_R"]
-    CSV --> KL["K-L: i_k"]
-    KL --> Tafel["Tafel: alpha, i0"]
-    Levich --> Figs["Figures"]
-    Tafel --> Figs
-    Figs --> LaTeX["xelatex"]
-    LaTeX --> PDF["Report PDF"]
+    subgraph ORR
+        O_TXT["CHI660E TXT"] --> O_Parse["parse + convert"]
+        O_Parse --> O_KL["K-L + Tafel analysis"]
+    end
+    subgraph RDE
+        R_TXT["CHI660E TXT"] --> R_Parse["Tafel Plot parse"]
+        R_Parse --> R_Levich["Levich: D_O, D_R"]
+    end
+    subgraph EIS
+        E_MPT["Bio-Logic .mpt"] --> E_Parse["parse + normalize"]
+        E_Parse --> E_Fit["R(Q(RW)) CNLS fit"]
+    end
+    O_KL --> Report["xelatex -> PDF"]
+    R_Levich --> Report
+    E_Fit --> Report
 ```
 
 ## 项目
