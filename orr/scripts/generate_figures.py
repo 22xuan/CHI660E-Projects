@@ -13,6 +13,7 @@ from pathlib import Path
 from common import (
     PROJECT_DIR,
     load_params,
+    load_all_data,
     angular_velocity,
     levich_constant,
     compute_jk_corrected,
@@ -20,8 +21,7 @@ from common import (
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-with open(PROJECT_DIR / "params.yaml", encoding="utf-8") as _f:
-    _cfg = load_params()
+_cfg = load_params()
 GROUPS = _cfg["data"]["groups"]
 RPMS = _cfg["kl_analysis"]["rotation_speeds_rpm"]
 CATALYST_NAMES = _cfg.get("catalysts", {g: g for g in GROUPS})
@@ -53,10 +53,6 @@ plt.rcParams.update(
         "savefig.facecolor": "white",
     }
 )
-
-
-def load_all_data() -> pd.DataFrame:
-    return pd.read_csv(PROJECT_DIR / "output" / "processed" / "all_data.csv")
 
 
 def fig1_lsv_overlay(

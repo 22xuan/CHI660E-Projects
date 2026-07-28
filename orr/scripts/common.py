@@ -18,6 +18,13 @@ def load_params() -> Dict[str, Any]:
         return yaml.safe_load(f)
 
 
+def load_all_data() -> pd.DataFrame:
+    path = PROJECT_DIR / "output" / "processed" / "all_data.csv"
+    if not path.exists():
+        raise FileNotFoundError(f"Data file not found: {path}\nRun parse_chi660e.py first.")
+    return pd.read_csv(path)
+
+
 def angular_velocity(rpm: float) -> float:
     return rpm * 2 * np.pi / 60
 

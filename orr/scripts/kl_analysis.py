@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Tuple, Optional
 
 from common import (
+    load_all_data,
     PROJECT_DIR,
     load_params,
     levich_constant,
@@ -20,12 +21,6 @@ from common import (
 )
 
 
-
-def load_all_data() -> pd.DataFrame:
-    path = PROJECT_DIR / "output" / "processed" / "all_data.csv"
-    if not path.exists():
-        raise FileNotFoundError(f"数据文件不存在: {path}\n请先运行 parse_chi660e.py")
-    return pd.read_csv(path)
 
 
 def build_raw_data_dict(
