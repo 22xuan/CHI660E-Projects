@@ -27,7 +27,7 @@ from PIL import Image
 import os
 src = 'output/figures'
 dst = '$TMPDIR'
-figs = ['Fig1_Levich.png', 'Fig2_Concentration.png', 'Fig4_Tafel_1组.png', 'Fig5_HalfWave_1组.png']
+figs = ['Fig1_Levich.png', 'Fig2_Concentration.png', 'Fig3_KL_1组.png', 'Fig4_Tafel_1组.png', 'Fig5_HalfWave_1组.png']
 for f in figs:
     fpath = os.path.join(src, f)
     if os.path.exists(fpath):

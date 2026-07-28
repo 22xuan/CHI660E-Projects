@@ -113,6 +113,25 @@ K$_4$Fe(CN)$_6$/K$_3$Fe(CN)$_6$ 氧化还原电对（Fe(CN)$_6^{3-} + e^- \right
 \newpage
 
 % ============================================================
+\section{分析方法}
+
+分析采用 Python 脚本自动化处理，各步骤通过 CSV 文件传递数据：
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{数据解析} (\texttt{parse\_chi660e.py})：识别 CHI660E Tafel Plot 格式（3 列数据），
+  按实验条件分类汇总
+  \item \textbf{Levich 分析} (\texttt{levich\_analysis.py})：提取阴阳极极限电流 $\rightarrow$
+  $|i_l|$ vs $\omega^{1/2}$ 线性拟合 $\rightarrow$ 扩散系数 $D_{\text{O}}$、$D_{\text{R}}$
+  \item \textbf{浓度校准 + K-L/Tafel} (\texttt{kl\_analysis.py})：
+  浓度校准 $\rightarrow$ 选定过电位 $\rightarrow$ K-L 提取 $i_k$
+  $\rightarrow$ $\eta$ vs $\log|i_k|$ Tafel 外推 $\rightarrow$ $\alpha$、$i_0$
+  \item \textbf{半波电位}：0.0008M 无 KCl 极化曲线 $\rightarrow$ $E_0$、$E_{1/2}$
+  \item \textbf{图表} (\texttt{generate\_figures.py})：Matplotlib 生成 Levich/K-L/Tafel/半波电位图
+\end{enumerate}
+
+\newpage
+
+% ============================================================
 \section{理论背景}
 
 \subsection{Levich 方程}
@@ -234,6 +253,13 @@ $D_{\text{R}}$ 比文献值低约 34\%，可能原因：（1）阳极极限电�
 $1/|i|$ 对 $\omega^{-1/2}$ 的线性拟合良好（$R^2 > 0.86$），
 由截距获得各过电位下的动力学电流 $i_k$。
 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{Fig3_KL_1组.jpg}
+\caption{K-L 图（Grp1）：$1/|i|$ vs $\omega^{-1/2}$，6 个过电位各一条拟合线}
+\label{fig:kl}
+\end{figure}
+
 \subsection{Tafel 分析}
 
 将 K-L 获得的 $i_k$ 代入 Tafel 分析，$\eta$ vs $\log|i_k|$ 线性拟合结果如下：
@@ -352,6 +378,73 @@ John Wiley \& Sons, New York, 2001. (第 9 章: Rotating Disk Electrode)
 \textit{电化学实验},
 实验 26: K$_4$Fe(CN)$_6$/K$_3$Fe(CN)$_6$体系旋转圆盘电极动力学参数的测定.
 
+\bibitem{nicholson1965}
+R.~S.~Nicholson,
+``Theory and Application of Cyclic Voltammetry for Measurement of Electrode Reaction Kinetics,''
+\textit{Analytical Chemistry}, 1965, \textbf{37}(11), 1351--1355.
+
+\bibitem{treimer2002}
+S.~E.~Treimer, D.~H.~Evans,
+``Electrochemical Study of the Fe(CN)$_6^{3-}$/Fe(CN)$_6^{4-}$ Couple at an Iridium Oxide Electrode,''
+\textit{Journal of the Electrochemical Society}, 2002, \textbf{149}(12), E485--E491.
+
 \end{thebibliography}
+
+\newpage
+
+% ============================================================
+\appendix
+\section{附录：数据分析方法论}
+
+\subsection{自动化数据处理流水线}
+
+本项目数据处理由 Python 脚本自动化完成：
+
+\begin{center}
+\small
+\begin{tabular}{c@{\hspace{0.5cm}}c@{\hspace{0.5cm}}c@{\hspace{0.5cm}}c}
+\toprule
+\textbf{步骤} & \textbf{脚本} & \textbf{输入} & \textbf{输出} \\
+\midrule
+1. 解析 & \texttt{parse\_chi660e.py} & Tafel Plot TXT & \texttt{all\_data.csv} \\
+2. Levich & \texttt{levich\_analysis.py} & \texttt{all\_data.csv} & \texttt{limiting\_currents.csv} \\
+3. K-L/Tafel & \texttt{kl\_analysis.py} & \texttt{all\_data.csv} & \texttt{kl\_analysis.csv}, \texttt{tafel\_results.csv} \\
+4. 图表 & \texttt{generate\_figures.py} & 各CSV & PNG 图 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+
+\textbf{关键技术特征}：
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{参数化配置}：实验参数存储于 \texttt{params.yaml}，脚本通过
+  \texttt{yaml.safe\_load()} 读取
+  \item \textbf{数据格式}：中间数据全部采用 CSV 格式（可读、可查、跨平台兼容）
+  \item \textbf{类型注解}：函数接口添加 Python 类型注解
+  \item \textbf{单元测试}：\texttt{tests/} 目录包含 Levich 常数计算和扩散系数
+  拟合的自动化验证
+  \item \textbf{兼容性}：Tafel Plot 3 列格式 + 自动跳过头部参数行
+\end{enumerate}
+
+\subsection{项目结构}
+
+\begin{verbatim}
+rde-kinetics/
+|-- params.yaml
+|-- run_all.sh
+|-- scripts/
+|   |-- parse_chi660e.py       # Tafel Plot 解析
+|   |-- levich_analysis.py     # Levich 分析
+|   |-- kl_analysis.py         # K-L + Tafel
+|   `-- generate_figures.py    # 图表生成
+|-- tests/
+|   `-- test_levich.py
+|-- output/
+|   |-- processed/  tables/  figures/
+`-- report/
+    `-- RDE_分析报告.tex
+\end{verbatim}
 
 \end{document}
