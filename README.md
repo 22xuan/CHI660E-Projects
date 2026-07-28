@@ -31,12 +31,12 @@ flowchart LR
 
 催化剂的氧还原反应（ORR）性能分析：
 - Koutecky-Levich 电子转移数、Tafel 动力学、iR 补偿
-- Co$_3$O$_4$/C vs 20% Pt/C，304/316 不锈钢电极
+- Co₃O₄/C vs 20% Pt/C，304/316 不锈钢电极
 - [报告 (Markdown)](orr/report/ORR_RDE_分析报告.md) · 11 项测试
 
 ### [RDE 动力学参数测定](rde-kinetics/)
 
-旋转圆盘电极测定 Fe(CN)$_6^{3-/4-}$ 氧化还原体系动力学参数：
+旋转圆盘电极测定 Fe(CN)₆³⁻/⁴⁻ 氧化还原体系动力学参数：
 - Levich 分析 → 扩散系数 + 基线扣除 + 误差传播
 - K-L 分析 → 动力学电流、Tafel 外推 → 传递系数
 - [报告 (Markdown)](rde-kinetics/report/RDE_分析报告.md) · 2 项测试
