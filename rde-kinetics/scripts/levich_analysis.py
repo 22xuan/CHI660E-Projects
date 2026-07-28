@@ -116,7 +116,7 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     lc_df.to_csv(out_dir / "limiting_currents.csv", index=False, encoding="utf-8-sig")
 
-    # 每组分别计算
+    # Per-group / 每组分别计算
     groups = params["data"]["groups"]
     print("\n阴极扩散系数 D_O (Fe(CN)₆³⁻):")
     for g in groups:
@@ -143,7 +143,7 @@ def main() -> None:
             )
             print(f"  {g}: D_R = {D:.3e} cm²/s, R² = {r2:.4f}")
 
-    # 基线校正后
+    # Baseline-corrected / 基线校正后
     print("\n--- 基线校正后 ---")
     print("阴极扩散系数 D_O (基线校正):")
     for g in groups:

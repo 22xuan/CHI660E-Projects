@@ -32,14 +32,14 @@ def prepare_data(df):
     """对数降采样 + 异常值剔除"""
     mask = (df["freq_Hz"] >= 0.02) & (df["freq_Hz"] <= 30000)
     d = df[mask].copy()
-    # 移除高频异常值
+    # Remove high-freq outliers / 移除高频异常值
     hi = d[d["freq_Hz"] > 1000]
     med = hi["Zre_ohm_cm2"].median()
     hi_ok = (hi["Zre_ohm_cm2"] > 0) & (hi["Zre_ohm_cm2"] < 3 * med) & (hi["Zim_ohm_cm2"] > 0)
     hi = hi[hi_ok]
     lo = d[d["freq_Hz"] <= 1000]
     d = pd.concat([hi, lo])
-    # 对数降采样
+    # Log downsample / 对数降采样
     logf = np.log10(d["freq_Hz"])
     bins = np.linspace(logf.min(), logf.max(), 80)
     idxs = sorted(set(np.argmin(np.abs(logf - b)) for b in bins))

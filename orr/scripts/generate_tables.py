@@ -99,7 +99,7 @@ def build_merged_summary(
     return pd.DataFrame(rows)
 
 
-def to_markdown(df: pd.DataFrame, title: str = "## 催化剂性能对比") -> str:
+def to_markdown(df: pd.DataFrame, title: str = "## Catalyst Comparison / 催化剂性能对比") -> str:
     lines = [title, "", df.to_markdown(index=False), ""]
     return "\n".join(lines)
 
@@ -126,7 +126,7 @@ def main() -> None:
     summary.to_csv(out_dir / "group_comparison.csv", index=False, encoding="utf-8-sig")
     print(f"\n对比表已保存到 {out_dir / 'group_comparison.csv'}")
 
-    md_content = to_markdown(summary, "## 催化剂性能对比 (ORR RDE 测试)")
+    md_content = to_markdown(summary, "## Catalyst Comparison / 催化剂性能对比 (ORR RDE 测试)")
     md_path = out_dir / "group_comparison.md"
     with open(md_path, "w", encoding="utf-8") as f:
         f.write(md_content)

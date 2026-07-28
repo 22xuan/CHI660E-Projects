@@ -160,7 +160,7 @@ def fig3_kl() -> None:
                 continue
             ax.scatter(edf["omega_neg_half"], edf["i_inv_A"], color=COLORS[i], s=25, zorder=5)
 
-            # 拟合线
+            # Fit line / 拟合线
             ef = g_fit[g_fit["eta_mV"] == eta]
             if len(ef) > 0:
                 x_arr = edf["omega_neg_half"].values

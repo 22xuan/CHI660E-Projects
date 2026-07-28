@@ -109,7 +109,7 @@ def extract_e_half_ir(
         idx = int((descend["current_density_ma_cm2"] - j_half).abs().idxmin())
         e_half_ir = descend.loc[idx, "potential_vs_rhe_ir"]
 
-        # 原始值
+        # Original value / 原始值
         e_half_raw = find_half_wave(gdf, params)
         rhe_offset = params["reference_electrode"]["conversion_to_rhe"]
         e_half_raw_rhe = e_half_raw + rhe_offset if not np.isnan(e_half_raw) else np.nan
@@ -135,7 +135,7 @@ def main() -> None:
     print("LSV 关键参数提取")
     print("=" * 60)
 
-    # 原始数据提取
+    # Raw data / 原始数据提取
     metrics = extract_metrics(all_df, params)
 
     out_dir = PROJECT_DIR / params["output"]["tables_dir"]
