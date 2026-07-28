@@ -1,4 +1,5 @@
 %!TEX program = xelatex
+% 本文件通过 run_all.sh 编译（图片在仓库中为 .png，编译时复制至临时目录）
 \documentclass[12pt,a4paper]{ctexart}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb,booktabs,graphicx,hyperref,caption,enumitem}
@@ -84,6 +85,46 @@ pH & 6.0 和 6.6\\
 \newpage
 
 % ======================================================================
+\section{分析方法}
+
+\subsection{数据处理流水线}
+
+原始数据通过 Python 脚本自动化处理：
+
+\begin{center}\small
+\begin{tabular}{c@{\hspace{0.4cm}}c@{\hspace{0.4cm}}c@{\hspace{0.4cm}}c}
+\toprule
+\textbf{步骤} & \textbf{脚本} & \textbf{输入} & \textbf{输出} \\
+\midrule
+1. 解析 & \texttt{parse\_mpt.py} & .mpt 文件 & CSV \\
+2. 图表 & \texttt{plot\_eis.py} & CSV & Nyquist, Bode PNG \\
+3. 拟合 & \texttt{circuit\_fit.py} & CSV & 参数表, Fit PNG \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+
+\subsection{CNLS 拟合流程}
+
+采用 R(Q(RW)) 模型分步拟合，避免 6 参数同时发散：
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{数据预处理} (\texttt{prepare\_data})：筛选 0.02--30\,kHz 频段，
+  剔除高频异常值（$Z_{re} > 3\times$ 中位数），对数降采样至 $\sim$80 点
+  \item \textbf{Rs 固定}：从最高频 10\% 数据中取 $Z_{im} \approx 0$ 的点，
+  直接读取 $R_s$（物理意义最确定）
+  \item \textbf{R(QR) 初值}：$>$\,0.5\,Hz 频段拟合 $R_1$, $Q_1$, $n_1$，
+  $R_1^{(0)}$ 由低频 $Z_{re}$ 减 $R_s$ 估算，$Q_1^{(0)}$ 由 Nyquist 峰值频率推算
+  \item \textbf{Warburg 叠加}：全频谱拟合 $R_1$, $Q_1$, $n_1$, $W$, $P$（5 参数），
+  初值继承步骤 3
+  \item \textbf{加权策略}：模量加权（$1/|Z|$），防低频大阻抗主导
+  \item \textbf{优化器}：\texttt{scipy.optimize.curve\_fit}（信任域法），最大 30,000 次迭代
+\end{enumerate}
+
+\newpage
+
+% ======================================================================
 \section{理论背景}
 
 \subsection{Nyquist 与 Bode 图}
@@ -104,7 +145,10 @@ Z(\omega) = R_s + \frac{1}{Q_1(j\omega)^{n_1} + \frac{1}{R_1 + Z_W(\omega)}}
 \end{equation}
 
 其中 CPE（常相位元件）替代纯电容：$Z_{CPE} = 1/[Q(j\omega)^n]$，$n \rightarrow 1$ 为理想电容，
-$n < 1$ 反映表面不均匀性。
+$n < 1$ 反映表面不均匀性。CPE 等效电容可由 Brug 公式估算\cite{hsu2001}：
+$C_{eff} = Q^{1/n} \cdot R_s^{(1-n)/n}$，
+代入本实验参数得 $C_{eff} \approx 6\times10^{-6}$\,F/cm$^2$，
+量级与含 FeCO$_3$ 层的钢/盐水界面双电层电容预期一致。
 
 有限 Warburg 扩散阻抗：
 
@@ -263,7 +307,11 @@ $\chi^2$ 值较高（$\sim 10^{11}$），原因包括：
   可能给出相似的 Nyquist 视觉拟合，电路选择依赖物理合理性判断
   \item \textbf{无 LPR 验证}：极化电阻未通过线性极化（LPR）独立验证（数据集中虽有 LPR 文件但未纳入分析）
   \item \textbf{电极面积不确定}：面积 6.4 cm$^2$ 来自文件名，
-  EC-Lab 头文件记录为 0.001 cm$^2$（占位符），实际有效面积可能因局部腐蚀偏离
+  EC-Lab 头文件记录为 0.001 cm$^2$（占位符）。面积 $\pm$10\% 误差直接传递为
+  $R_{total}$ $\pm$10\% 偏差，但不影响 pH 间的相对趋势
+  \item \textbf{Rs 差异}：pH 6.0 的 Rs（90 $\Omega\!\cdot\!$cm$^2$）
+  高于 pH 6.6（54 $\Omega\!\cdot\!$cm$^2$），可能源于 pH 6.0 电解液配制
+  时盐浓度差异或电极间距变化，非表面效应。Rs 偏差不影响 $R_{total}$ 的相对排序
 \end{enumerate}
 
 \subsection{建议改进}
@@ -293,6 +341,71 @@ M.~E.~Orazem, B.~Tribollet,
 \textit{Electrochemical Impedance Spectroscopy},
 John Wiley \& Sons, 2008.
 
+\bibitem{hsu2001}
+C.~H.~Hsu, F.~Mansfeld,
+``Concerning the conversion of the constant phase element parameter $Y_0$ into a capacitance,''
+\textit{Corrosion}, 2001, \textbf{57}(9), 747--748.
+DOI: \href{https://doi.org/10.5006/1.3290606}{10.5006/1.3290606}
+
 \end{thebibliography}
+
+\newpage
+
+% ======================================================================
+\appendix
+\section{附录：数据分析方法论}
+
+\subsection{自动化数据处理流水线}
+
+本项目通过 Python 脚本实现从 Bio-Logic .mpt 原始文件到拟合参数表的全流程自动化：
+
+\begin{center}\small
+\begin{tabular}{c@{\hspace{0.4cm}}c@{\hspace{0.4cm}}c@{\hspace{0.4cm}}c}
+\toprule
+\textbf{步骤} & \textbf{脚本} & \textbf{输入} & \textbf{输出} \\
+\midrule
+1. 解析 & \texttt{parse\_mpt.py} & .mpt 文件 & 归一化 CSV \\
+2. 图表 & \texttt{plot\_eis.py} & CSV & Nyquist, Bode PNG \\
+3. 拟合 & \texttt{circuit\_fit.py} & CSV & 参数表, Fit PNG \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+
+\textbf{关键技术特征}：
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{多格式兼容}：支持 Bio-Logic EC-Lab .mpt 格式（ASCII + 欧洲逗号数字），
+  自动跳过头部元数据
+  \item \textbf{CNLS 非线性拟合}：通过 \texttt{scipy.optimize.curve\_fit} 实现
+  复数非线性最小二乘，同时拟合阻抗实部与虚部
+  \item \textbf{分步策略}：Rs 固定 → R(QR) 初值 → Warburg 叠加 → 精修，
+  防止高维参数空间发散
+  \item \textbf{模量加权}：以 $1/|Z|$ 为权重，平衡高频低阻抗点与低频高阻抗点
+  在目标函数中的贡献
+  \item \textbf{参数化配置}：实验条件（面积、温度、pH、等效电路模型）集中
+  存储于 \texttt{params.yaml}
+  \item \textbf{数据降采样}：38,000+ 原始数据点 → 对数均匀 $\sim$80 点，
+  减少计算量的同时保持 Nyquist 形状特征
+\end{enumerate}
+
+\subsection{项目结构}
+
+\begin{verbatim}
+eis/
+|-- params.yaml             # 实验参数与配置
+|-- run_all.sh              # 一键全流程
+|-- scripts/
+|   |-- parse_mpt.py         # Bio-Logic .mpt 解析
+|   |-- plot_eis.py          # Nyquist + Bode 图
+|   `-- circuit_fit.py       # R(Q(RW)) CNLS 拟合
+|-- output/
+|   |-- processed/           # 归一化 CSV
+|   |-- figures/             # PNG 图表
+|   `-- tables/              # 拟合参数表
+`-- report/
+    `-- CO2_EIS_报告.tex     # LaTeX 源文件
+\end{verbatim}
 
 \end{document}
