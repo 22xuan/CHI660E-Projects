@@ -355,6 +355,12 @@ Tafel 斜率中 2 组（Grp1/Grp4）与另 2 组（Grp2/Grp3）存在系统性�
 \subsection{当前局限}
 
 \begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{Butler-Volmer 反反应贡献量化}：对单电子转移（$n=1$），
+  阳极 Tafel 方程 $\eta = \frac{RT}{\alpha F}\ln\frac{i}{i_0}$ 在低 $\eta$ 区
+  因反反应贡献不完全成立。B-V 方程取 $\eta=80$\,mV、$\alpha=0.5$ 时反反应贡献
+  $\approx \exp(-\alpha F\eta/RT) \approx 17\%$，使表观 Tafel 斜率从理论
+  118\,mV/dec 降至 $\sim 90$\,mV/dec，与实测 60--82\,mV/dec 定性一致。
+  残余差异的精确归因需 $\eta > 200$\,mV 或采用 Nicholson 方法\cite{nicholson1965}。
   \item \textbf{阳极平台不完整}：$D_{\text{R}}$ 系统偏低 34\%。误差传播分析表明，
   $D_{\text{O}}$ 的 14\% 偏差可由称量误差（$c^* \pm 5\%$，贡献 $\sim 7.5\%$）和
   电极面积误差（$A \pm 3\%$，贡献 $\sim 4.5\%$）联合解释；而 $D_{\text{R}}$ 的
@@ -370,7 +376,8 @@ Tafel 斜率中 2 组（Grp1/Grp4）与另 2 组（Grp2/Grp3）存在系统性�
 
 \begin{enumerate}[leftmargin=1.5cm]
   \item 扩大阳极扫描范围至更高电位，确保极限电流完全达到平台
-  \item 扣除 KCl 基底背景电流
+  \item 扩大阳极扫描范围至更高电位，确保极限电流完全达到平台。
+  若扩大范围应重新采集 KCl 基线以配合新电位范围
   \item 将 Tafel 分析的 $\eta$ 范围扩展至 200--400 mV
   \item 采用 Nicholson 方法（CV 峰电位差法）独立验证 $\alpha$ 值
 \end{enumerate}

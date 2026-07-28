@@ -203,6 +203,21 @@ def main():
     print(f"\n参数表: {TAB_DIR / 'eis_parameters.csv'}")
     print(dfp.to_string(index=False))
 
+    lpr_csv = TAB_DIR / "lpr_results.csv"
+    if lpr_csv.exists():
+        lpr_df = pd.read_csv(lpr_csv)
+        print("\nLPR-EIS 交叉验证:")
+        for _, row in lpr_df.iterrows():
+            ph = row["pH"]
+            rp_lpr = row["Rp_LPR_ohm_cm2"]
+            eis_row = dfp[dfp["pH"] == ph]
+            if len(eis_row) > 0:
+                r_total = eis_row.iloc[0]["R_total"]
+                dev = abs(rp_lpr - r_total) / max(rp_lpr, r_total) * 100
+                print(
+                    f"  pH {ph}: Rp(LPR)={rp_lpr:.0f}, R_total(EIS)={r_total:.0f}, 偏差={dev:.0f}%"
+                )
+
 
 if __name__ == "__main__":
     main()

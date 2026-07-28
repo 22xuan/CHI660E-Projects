@@ -29,6 +29,12 @@ equivalent_circuit:
 fitting:
   weighting: "modulus"  # 1/|Z| 加权，平衡高低频
 
+lpr_conditions:
+  - { pH: 6.6, label: "pH6.6", file: "10.07.17_andra_6.4cm2_80C_6.6pH_LPR.mpt" }
+  - { pH: 6.0, label: "pH6.0", file: "10.10.17_andra_6.4cm2_80C_6pH_LPR.mpt" }
+
+stern_geary_B_mV: 26
+
 output:
   processed_dir: "output/processed"
   figures_dir: "output/figures"
