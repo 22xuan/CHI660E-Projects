@@ -43,6 +43,7 @@ if command -v xelatex &> /dev/null; then
     echo "-----------------------------------------"
     echo " 编译 LaTeX 报告..."
     TMPDIR=$(mktemp -d)
+    trap "rm -rf $TMPDIR" EXIT
     cp report/ORR_RDE_分析报告.tex "$TMPDIR/"
 
     # 用 Python 读取并转换图片到 ext4 临时目录
@@ -52,8 +53,10 @@ import os
 src = 'output/figures'
 dst = '$TMPDIR'
 figs = [
+    # 注：如需新增图片引用，需同步更新此列表
     'Fig2_Group_Comparison_1600r.png',
     'Fig3_KL_1组.png', 'Fig3_KL_2组.png',
+    'Fig4_Tafel_1组.png',
     'Fig5_Key_Parameters_Bar.png',
 ]
 for f in figs:
@@ -87,7 +90,6 @@ for f in figs:
         exit 1
     fi
 
-    rm -rf "$TMPDIR"
     echo "-----------------------------------------"
 else
     echo "  跳过 LaTeX 编译 (xelatex 未安装)"

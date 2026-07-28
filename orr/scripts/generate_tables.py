@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """汇总报表生成 — 催化剂组间对比 CSV + Markdown (含平行样合并)"""
 
-import json
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -39,6 +38,8 @@ def build_merged_summary(
     params: Dict[str, Any],
 ) -> pd.DataFrame:
     merge_config = params.get("merge", {})
+    if not merge_config.get("enabled", False):
+        return pd.DataFrame()
     pairs: Dict[str, list[str]] = merge_config.get("pairs", {})
     param_map = params.get("catalysts", {})
     rhe_offset = params["reference_electrode"]["conversion_to_rhe"]

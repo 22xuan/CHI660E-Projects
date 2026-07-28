@@ -22,25 +22,44 @@
 
 ```
 rde-kinetics/
+├── .gitignore
+├── LICENSE
+├── README.md
 ├── params.yaml
+├── requirements.txt
 ├── run_all.sh
 ├── scripts/
+│   ├── common.py            # 公共函数 (load_params, angular_velocity)
 │   ├── parse_chi660e.py      # Tafel Plot 3列格式解析
 │   ├── levich_analysis.py    # Levich分析 → D_O, D_R
 │   ├── kl_analysis.py        # 浓度校准 + K-L + Tafel
 │   └── generate_figures.py   # matplotlib 图表
 ├── tests/
 │   └── test_levich.py
+├── report/
+│   ├── RDE_分析报告.tex
+│   ├── RDE_分析报告.pdf
+│   └── RDE_分析报告.md
 └── output/
     ├── processed/  tables/  figures/
 ```
 
 ## 快速开始
 
+**前提**：
+1. `pip install -r requirements.txt`
+2. `data/` 目录已软链接至原始数据
+
 ```bash
 bash run_all.sh
 ```
 
+## 已知局限
+
+- D_R 偏低 34%：阳极极限电流平台不完整
+- α 偏高：过电位选区偏低，反反应贡献
+- 4 组数据大部分转速下一致（CHI660E 导出精度）
+
 ## 依赖
 
-numpy scipy pandas matplotlib pyyaml
+numpy scipy pandas matplotlib pyyaml Pillow

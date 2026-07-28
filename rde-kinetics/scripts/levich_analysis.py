@@ -6,19 +6,9 @@ import pandas as pd
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 from scipy import stats
-import yaml
-
+from common import load_params, angular_velocity
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = SCRIPT_DIR.parent
-
-
-def load_params() -> Dict[str, Any]:
-    with open(PROJECT_DIR / "params.yaml", encoding="utf-8") as f:
-        return yaml.safe_load(f)
-
-
-def angular_velocity(rpm: float) -> float:
-    return rpm * 2 * np.pi / 60
 
 
 def extract_limiting_currents(all_df: pd.DataFrame, params: Dict[str, Any]) -> pd.DataFrame:
@@ -75,7 +65,8 @@ def compute_diffusion_coefficient(
 
     F = params["electrolyte"]["faraday_constant"]
     nu = params["electrolyte"]["viscosity_cm2_per_s"]
-    c_star = 0.01 * 1e-3  # mol/cm³
+    conc_M = params["concentrations"]["values_mol_per_L"][-1]
+    c_star = conc_M * 1e-3
     A = params["electrode"]["area_for_j"]
 
     coeff = 0.62 * n * F * A * nu ** (-1 / 6) * c_star
@@ -109,6 +100,7 @@ def main() -> None:
                 gdf["omega_sqrt"].tolist(),
                 params,
             )
+            if np.isnan(D): print(f"  [警告] {g} 阴极拟合失败, R2={r2:.4f}"); continue
             print(f"  {g}: D_O = {D:.3e} cm²/s, R² = {r2:.4f}")
 
     print("\n阳极扩散系数 D_R (Fe(CN)₆⁴⁻):")

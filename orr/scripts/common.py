@@ -103,7 +103,7 @@ def find_limiting_current_density(df: pd.DataFrame, params: Dict[str, Any]) -> T
 def compute_jk_corrected(j: float, j_lim: float) -> float:
     if abs(j) < 1e-12 or abs(j_lim) < 1e-12:
         return j
-    return (j * j_lim) / (j_lim - j) if abs(j_lim) > abs(j) else j
+    return (abs(j) * abs(j_lim)) / (abs(j_lim) - abs(j)) if abs(j_lim) > abs(j) else j
 
 
 def extract_kl_data(

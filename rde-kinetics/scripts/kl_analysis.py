@@ -6,19 +6,9 @@ import pandas as pd
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 from scipy import stats
-import yaml
-
+from common import load_params, angular_velocity
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = SCRIPT_DIR.parent
-
-
-def load_params() -> Dict[str, Any]:
-    with open(PROJECT_DIR / "params.yaml", encoding="utf-8") as f:
-        return yaml.safe_load(f)
-
-
-def angular_velocity(rpm: float) -> float:
-    return rpm * 2 * np.pi / 60
 
 
 def find_zero_crossing(df: pd.DataFrame) -> float:
@@ -37,7 +27,7 @@ def concentration_calibration(all_df: pd.DataFrame, params: Dict[str, Any]) -> p
     records = []
     for group in groups:
         for conc in concs:
-            if conc == 0.01:
+            if abs(conc - 0.01) < 1e-12:
                 key = f"PartA_{group}_2000rpm"
             else:
                 key = f"PartB_{group}_{conc}M"
@@ -165,7 +155,9 @@ def kl_analysis(
             slope, intercept, r_val, _, _ = stats.linregress(x_arr, y_arr)
             b_mv = abs(1.0 / slope) if slope != 0 else np.nan
             i0 = 10 ** float(intercept)
-            alpha_val = round(0.059 / (b_mv / 1000), 3) if not np.isnan(b_mv) else np.nan
+            T = params["electrolyte"]["temperature_c"] + 273.15
+            RT_F = 8.314 * T / params["electrolyte"]["faraday_constant"]
+            alpha_val = round(2.303 * RT_F / (b_mv / 1000), 3) if not np.isnan(b_mv) else np.nan
             tafel_records.append(
                 {
                     "group": group,

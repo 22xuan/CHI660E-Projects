@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 """CHI660E Tafel Plot 数据解析器 — 3列格式 (E, I, log|I|)"""
 
-import os, re, csv
 import pandas as pd
-import numpy as np
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 
@@ -11,11 +9,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = SCRIPT_DIR.parent
 
 import yaml
-
-
-def load_params() -> Dict[str, Any]:
-    with open(PROJECT_DIR / "params.yaml", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+from common import load_params
 
 
 def parse_tafel_file(filepath: str) -> pd.DataFrame:

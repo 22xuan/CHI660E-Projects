@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 """生成 matplotlib 预览图 — LSV叠加 / K-L图 / Tafel图 / 对比柱状图"""
 
-import json
 import numpy as np
 import pandas as pd
 import matplotlib
 
 matplotlib.use("Agg")
+from typing import Dict, Any, List
 import matplotlib.pyplot as plt
 from pathlib import Path
-from typing import Dict, Any, List, Optional
 
 from common import (
     PROJECT_DIR,
@@ -344,8 +343,8 @@ def fig5_bar_chart(params: Dict[str, Any]) -> None:
     )
     axes[2].set_title("Electron Transfer Number (n)")
     axes[2].set_ylabel("n")
-    axes[2].axhline(y=4.0, color="red", ls="--", alpha=0.6, label="n=4 (4e- pathway)")
-    axes[2].axhline(y=2.0, color="blue", ls="--", alpha=0.6, label="n=2 (2e- pathway)")
+    axes[2].axhline(y=params["kl_analysis"]["n_theoretical_4e"], color="red", ls="--", alpha=0.6, label="n=4 (4e- pathway)")
+    axes[2].axhline(y=params["kl_analysis"]["n_theoretical_2e"], color="blue", ls="--", alpha=0.6, label="n=2 (2e- pathway)")
     axes[2].legend(fontsize=8)
     axes[2].tick_params(axis="x", rotation=10)
     for i, (v, e) in enumerate(zip(n_vals, n_errs)):

@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 from pathlib import Path
-from typing import Dict, Any, List, Tuple, Optional, Dict as DictT
+from typing import Dict, Any, List, Tuple, Optional
 
 from common import (
     PROJECT_DIR,
@@ -19,7 +19,6 @@ from common import (
     compute_jk_corrected,
 )
 
-SCRIPT_DIR = Path(__file__).resolve().parent
 
 
 def load_all_data() -> pd.DataFrame:
@@ -126,7 +125,7 @@ def tafel_analysis(
 
         slope, intercept, r_value, _p, _e = stats.linregress(x, y)
         tafel_slope_mv_dec = abs(1000.0 / slope) if slope != 0 else np.nan
-        j0_log = slope * 1.23 + intercept
+        j0_log = slope * params["reference_electrode"]["rhe_equilibrium_v"] + intercept
         j0_ma_cm2 = 10**j0_log if not np.isnan(j0_log) else np.nan
 
         tafel_results[group] = {

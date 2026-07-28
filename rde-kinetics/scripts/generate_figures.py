@@ -21,7 +21,7 @@ OUTPUT_DIR = PROJECT_DIR / CFG["output"]["figures_dir"]
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 TABLES_DIR = PROJECT_DIR / CFG["output"]["tables_dir"]
 COLORS = ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#A65628"]
-GLABEL = {"1组": "Grp1", "2组": "Grp2", "3组": "Grp3", "4组": "Grp4"}
+groups = CFG["data"]["groups"]; GLABEL = {g: f"Grp{i+1}" for i, g in enumerate(groups)}
 
 plt.rcParams.update(
     {"font.size": 11, "figure.dpi": 150, "savefig.dpi": 150, "savefig.bbox": "tight"}
@@ -176,13 +176,13 @@ def fig4_tafel() -> None:
             slope = gr["fit_slope"].values[0]
             intercept = gr["fit_intercept"].values[0]
             x_fit = np.linspace(g_raw["log_ik"].min(), g_raw["log_ik"].max(), 50)
-            y_fit = slope * x_fit + intercept
+            y_fit = (x_fit - intercept) / slope
             ax.plot(x_fit, y_fit, "k--", lw=1.5, label=f"b = {b:.1f} mV/dec (R2={r2:.3f})")
 
         # 参考线 a=0.5
         x_ref = np.linspace(g_raw["log_ik"].min(), g_raw["log_ik"].max(), 50)
         ax.plot(
-            x_ref, 118 * x_ref, "gray", lw=1, alpha=0.5, ls=":", label="b=118 mV/dec (alpha=0.5)"
+            x_ref, 2.303 * 8.314 * (CFG["electrolyte"]["temperature_c"] + 273.15) / (0.5 * CFG["electrolyte"]["faraday_constant"]) * 1000 * x_ref, "gray", lw=1, alpha=0.5, ls=":", label=f"alpha=0.5 reference"
         )
 
         ax.set_title(f"Op.{GLABEL[g]} — Tafel Plot")

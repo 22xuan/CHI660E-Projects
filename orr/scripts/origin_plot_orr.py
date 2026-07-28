@@ -5,7 +5,6 @@
 前提: 先运行 parse_chi660e.py + kl_analysis.py 生成 output/origin_input/ 数据
 """
 
-import os
 import sys
 import csv
 import yaml

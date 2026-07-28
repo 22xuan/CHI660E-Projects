@@ -28,6 +28,7 @@ import os
 src = 'output/figures'
 dst = '$TMPDIR'
 figs = ['Fig1_Levich.png', 'Fig2_Concentration.png', 'Fig3_KL_1组.png', 'Fig4_Tafel_1组.png', 'Fig5_HalfWave_1组.png']
+    # 注：如需新增图片引用，需同步更新此列表
 for f in figs:
     fpath = os.path.join(src, f)
     if os.path.exists(fpath):

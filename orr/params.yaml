@@ -27,8 +27,9 @@ electrolyte:
 # --- 参比电极电位转换 ---
 reference_electrode:
   type: "Hg/HgO"
-  e0_vs_she: 0.098          # E°(Hg/HgO) vs SHE
+  e0_vs_she: 0.098          # E°(Hg/HgO) vs SHE（已计入 conversion_to_rhe）
   conversion_to_rhe: 0.866  # E_RHE = E_Hg/HgO + 0.098 + 0.0591×13
+  rhe_equilibrium_v: 1.23   # O₂/H₂O 平衡电位 vs RHE
 
 # --- LSV 扫描参数 ---
 lsv:
@@ -80,7 +81,6 @@ data:
 
 # --- 输出配置 ---
 output:
-  root: "output"
   processed_dir: "output/processed"
   tables_dir: "output/tables"
   figures_dir: "output/figures"

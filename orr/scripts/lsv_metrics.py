@@ -3,8 +3,8 @@
 
 import numpy as np
 import pandas as pd
+from typing import Dict, Any, List
 from pathlib import Path
-from typing import Dict, Any, List, Dict as DictT
 
 from common import (
     PROJECT_DIR,
@@ -15,7 +15,6 @@ from common import (
     ir_correct,
 )
 
-SCRIPT_DIR = Path(__file__).resolve().parent
 
 
 def load_all_data() -> pd.DataFrame:
@@ -62,47 +61,6 @@ def extract_metrics(
     return pd.DataFrame(records)
 
 
-def extract_metrics_ir_corrected(
-    all_df: pd.DataFrame,
-    params: Dict[str, Any],
-    ru_ohm: float,
-) -> pd.DataFrame:
-    param_map = params.get("catalysts", {})
-    speeds = params["kl_analysis"]["rotation_speeds_rpm"]
-    groups = params["data"]["groups"]
-    threshold = params["thresholds"]["onset_j_ma_per_cm2"]
-
-    records: List[Dict[str, Any]] = []
-    for group in groups:
-        cat_name = param_map.get(group, group)
-        for rpm in speeds:
-            mask = (all_df["group"] == group) & (all_df["rpm"] == rpm)
-            gdf = all_df[mask]
-            if len(gdf) == 0:
-                continue
-
-            gdf_ir = ir_correct(gdf, ru_ohm, params)
-
-            lim_mask = (gdf_ir["potential_v"] >= params["lsv"]["limiting_range"][0]) & (
-                gdf_ir["potential_v"] <= params["lsv"]["limiting_range"][1]
-            )
-            j_lim = (
-                float(gdf_ir.loc[lim_mask, "current_density_ma_cm2"].mean())
-                if lim_mask.any()
-                else np.nan
-            )
-
-            records.append(
-                {
-                    "group": group,
-                    "catalyst": cat_name,
-                    "rpm": rpm,
-                    "ru_ohm": ru_ohm,
-                    "j_lim_ir_ma_cm2": round(j_lim, 4) if not np.isnan(j_lim) else np.nan,
-                }
-            )
-
-    return pd.DataFrame(records)
 
 
 def extract_e_half_ir(

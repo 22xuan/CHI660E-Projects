@@ -456,6 +456,13 @@ Tafel 斜率约为 108 mV/dec，介于 60 和 120 mV/dec 之间，但更接近 1
 可能与不锈钢电极的低电化学活性面积有关。
 各组独立测量的 Tafel 结果相同是因为输入数据在拟合区间内一致。
 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{Fig4_Tafel_1组.jpg}
+\caption{Co$_3$O$_4$/C (A1) — Tafel 图 @1600 rpm}
+\label{fig:tafel_orr}
+\end{figure}
+
 \subsection{与文献对比}
 
 \begin{table}[h]
@@ -645,7 +652,7 @@ DOI: \href{https://doi.org/10.1016/j.electacta.2017.09.145}{10.1016/j.electacta.
 \subsection{项目结构}
 
 \begin{verbatim}
-CHI660E-ORR/
+orr/
 |-- params.yaml          # 实验参数与配置
 |-- run_all.sh           # 一键全流程脚本
 |-- requirements.txt     # Python 依赖
