@@ -38,9 +38,9 @@ flowchart LR
 ### [EIS 腐蚀阻抗分析](eis/)
 
 低合金钢 CO₂ 腐蚀的等效电路分析（Bio-Logic SP-200 数据）：
-- Nyquist + Bode 图，Randles R(QR) CNLS 拟合
+- Nyquist + Bode 图，R(Q(RW)) CNLS 拟合
 - 已发表数据（Corrosion Science, 2020），CC BY 4.0
-- [报告 (Markdown)](eis/README.md)
+- [LaTeX 报告](eis/report/CO2_EIS_报告.pdf) | [Markdown](eis/README.md)
 
 ## 快速开始
 
