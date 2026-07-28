@@ -17,11 +17,11 @@ echo "[4/5] 图表生成..."
 python3 scripts/generate_figures.py
 
 # LaTeX 编译
-if command -v xelatex &> /dev/null && [ -f report/RDE_Kinetics_Report.tex ]; then
+if command -v xelatex &> /dev/null && [ -f report/RDE_分析报告.tex ]; then
     echo "-----------------------------------------"
     echo " 编译 LaTeX 报告..."
     TMPDIR=$(mktemp -d)
-    cp report/RDE_Kinetics_Report.tex "$TMPDIR/"
+    cp report/RDE_分析报告.tex "$TMPDIR/"
     python3 -c "
 from PIL import Image
 import os
@@ -38,12 +38,12 @@ for f in figs:
 "
     cd "$TMPDIR"
     LOGFILE="$TMPDIR/xelatex.log"
-    xelatex -interaction=nonstopmode RDE_Kinetics_Report.tex > "$LOGFILE" 2>&1
-    xelatex -interaction=nonstopmode RDE_Kinetics_Report.tex >> "$LOGFILE" 2>&1
-    if [ -f RDE_Kinetics_Report.pdf ]; then
-        cp RDE_Kinetics_Report.pdf "$SCRIPT_DIR"/report/
+    xelatex -interaction=nonstopmode RDE_分析报告.tex > "$LOGFILE" 2>&1
+    xelatex -interaction=nonstopmode RDE_分析报告.tex >> "$LOGFILE" 2>&1
+    if [ -f RDE_分析报告.pdf ]; then
+        cp RDE_分析报告.pdf "$SCRIPT_DIR"/report/
         cd "$SCRIPT_DIR"
-        echo "  编译成功: $(ls -lh report/RDE_Kinetics_Report.pdf | awk '{print $5}')"
+        echo "  编译成功: $(ls -lh report/RDE_分析报告.pdf | awk '{print $5}')"
     else
         echo "  错误: LaTeX 编译失败!"; tail -30 "$LOGFILE"; exit 1
     fi
