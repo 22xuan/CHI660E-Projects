@@ -1,0 +1,38 @@
+# EIS 分析 — 低合金钢 CO2 腐蚀
+# 数据来源: De Motte et al., Corrosion Science, 2020, 172, 108666
+# 数据集: Mendeley Data yvdggv253v/1 (CC BY 4.0)
+
+experiment:
+  title: "Low alloy steel CO2 corrosion — EIS"
+  source: "De Motte et al., Corrosion Science, 2020, 172, 108666"
+  doi: "10.1016/j.corsci.2020.108666"
+  dataset: "Mendeley Data yvdggv253v/1"
+  license: "CC BY 4.0"
+  electrode: "Low alloy steel (ANDRA CIGEO nuclear waste disposal)"
+  area_cm2: 6.4
+  temperature_C: 80
+  electrolyte: "CO2-saturated brine (NaCl + NaHCO3)"
+  conditions:
+    - { pH: 6.6, label: "pH6.6", file: "10.07.17_andra_6.4cm2_80C_6.6pH_IMP.mpt" }
+    - { pH: 6.0, label: "pH6.0", file: "10.10.17_andra_6.4cm2_80C_6pH_IMP.mpt" }
+
+equivalent_circuit:
+  model: "R(QR)"
+  name: "Randles circuit"
+  description: "Rs + CPE//Rp"
+  parameters:
+    - { symbol: "Rs", unit: "Ω·cm2", meaning: "Solution resistance" }
+    - { symbol: "Rp", unit: "Ω·cm2", meaning: "Polarization (charge transfer) resistance" }
+    - { symbol: "Q", unit: "S·s^n/cm2", meaning: "CPE coefficient" }
+    - { symbol: "n", unit: "-", meaning: "CPE exponent (n->1 = ideal capacitor)" }
+
+fitting:
+  weighting: "modulus"  # 1/|Z| 加权，平衡高低频
+
+output:
+  processed_dir: "output/processed"
+  figures_dir: "output/figures"
+  tables_dir: "output/tables"
+
+data:
+  source_root: "data"

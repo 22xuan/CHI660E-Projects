@@ -1,0 +1,7 @@
+output/processed/
+output/figures/
+output/tables/
+data/
+__pycache__/
+*.pyc
+qa/

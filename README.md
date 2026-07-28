@@ -35,11 +35,19 @@ flowchart LR
 - K-L 分析 → 动力学电流、Tafel 外推 → 传递系数
 - [报告 (Markdown)](rde-kinetics/report/RDE_分析报告.md)
 
+### [EIS 腐蚀阻抗分析](eis/)
+
+低合金钢 CO₂ 腐蚀的等效电路分析（Bio-Logic SP-200 数据）：
+- Nyquist + Bode 图，Randles R(QR) CNLS 拟合
+- 已发表数据（Corrosion Science, 2020），CC BY 4.0
+- [报告 (Markdown)](eis/README.md)
+
 ## 快速开始
 
 ```bash
 cd orr/ && bash run_all.sh           # ORR 全流程
 cd rde-kinetics/ && bash run_all.sh  # RDE 全流程
+cd eis/ && bash run_all.sh             # EIS 全流程
 ```
 
 ## 技术栈
