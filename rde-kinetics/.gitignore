@@ -17,3 +17,4 @@ __pycache__/
 *.fdb_latexmk
 .DS_Store
 report/*.pdf
+qa/
