@@ -39,7 +39,7 @@ def fig1_nyquist() -> None:
             label=f"pH {cond['pH']}",
         )
 
-        rs = df["Zre_ohm_cm2"].iloc[-1]
+        rs = df["Zre_ohm_cm2"].iloc[:10].min()
         ax.annotate(
             f"Rs={rs:.1f}",
             xy=(rs, 0),
@@ -76,7 +76,7 @@ def fig2_bode() -> None:
         )
         ax2.semilogx(
             df["freq_Hz"],
-            -np.abs(df["Phase_deg"]),
+            -df["Phase_deg"],
             "-",
             color=COLORS[idx],
             lw=1.5,

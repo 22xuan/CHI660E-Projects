@@ -20,11 +20,24 @@ def error_propagation(params):
     D_O = params["levich"]["D_O_literature_cm2_per_s"]
     D_R = params["levich"]["D_R_literature_cm2_per_s"]
 
+    # Read actual Levich slope from limiting_currents.csv
+    levich_slope = D_O  # placeholder replaced below if slope data available
+    try:
+        lc = pd.read_csv(PROJECT_DIR / params["output"]["tables_dir"] / "limiting_currents.csv")
+        g1 = lc[lc["group"] == lc["group"].unique()[0]].dropna(subset=["abs_i_cathode_A"])
+        if len(g1) > 0:
+            from scipy import stats as _st
+
+            s, _, _, _, _ = _st.linregress(g1["omega_sqrt"], g1["abs_i_cathode_A"])
+            levich_slope = s
+    except Exception:
+        pass
+
     params_def = [
         ("c* (mol/cm3)", cstar, 0.05, "浓度称量"),
         ("A (cm2)", A, 0.03, "电极几何面积"),
         ("nu (cm2/s)", nu, 0.02, "粘度文献值"),
-        ("slope (Levich)", None, 0.01, "极限电流拟合"),
+        ("slope (Levich)", levich_slope, 0.01, "极限电流拟合"),
     ]
 
     records = []
@@ -36,7 +49,7 @@ def error_propagation(params):
         elif name.startswith("nu"):
             dD_dp = (1 / 4) * D_O / nominal if nominal else 0
         elif name.startswith("slope"):
-            dD_dp = (3 / 2) * 1.0
+            dD_dp = (3 / 2) * D_O / nominal if nominal else 0
         else:
             dD_dp = 0
 

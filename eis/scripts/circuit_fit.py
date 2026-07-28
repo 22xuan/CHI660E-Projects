@@ -148,7 +148,7 @@ def fit_RQRW(df):
         "rel_err_pct": round(float(re), 1) if not np.isnan(re) else "N/A",
         "zre_fit": zf[: len(zf) // 2] if zf is not None else None,
         "zim_fit": zf[len(zf) // 2 :] if zf is not None else None,
-        "R_total": round(R1_f + W_f, 0) if not np.isnan(W_f) else round(R1_f, 0),
+        "R_total": round(rs0 + R1_f, 0) if not np.isnan(R1_f) else np.nan,
     }
 
 
@@ -214,8 +214,10 @@ def main():
             if len(eis_row) > 0:
                 r_total = eis_row.iloc[0]["R_total"]
                 dev = abs(rp_lpr - r_total) / max(rp_lpr, r_total) * 100
+                B_mv = CFG.get("stern_geary_B_mV", 26)
+                i_corr = B_mv * 1e-3 / rp_lpr * 1e6
                 print(
-                    f"  pH {ph}: Rp(LPR)={rp_lpr:.0f}, R_total(EIS)={r_total:.0f}, 偏差={dev:.0f}%"
+                    f"  pH {ph}: Rp(LPR)={rp_lpr:.0f}, R_total(EIS)={r_total:.0f}, 偏差={dev:.0f}%, i_corr={i_corr:.2f} μA/cm²"
                 )
 
 

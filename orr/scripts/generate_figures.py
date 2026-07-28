@@ -297,28 +297,12 @@ def fig5_bar_chart(params: Dict[str, Any]) -> None:
     cats = list(MERGED_CATALYSTS)
     bar_colors = COLORS[: len(cats)]
 
-    def parse_err(val: str) -> tuple[float, float]:
-        parts = val.split(" +/- ")
-        v = abs(float(parts[0]))
-        e = abs(float(parts[1])) if len(parts) > 1 else 0.0
-        return v, e
-
-    e_half = []
-    e_half_err = []
-    j_lim = []
-    j_lim_err = []
-    n_vals = []
-    n_errs = []
-    for _, row in comp_df.iterrows():
-        eh, ehe = parse_err(str(row["E_1/2 (V vs RHE)"]))
-        jl, jle = parse_err(str(row["|j_L| (mA/cm2) @1600r"]))
-        nv, ne = parse_err(str(row["n (电子转移数)"]))
-        e_half.append(eh)
-        e_half_err.append(ehe)
-        j_lim.append(jl)
-        j_lim_err.append(jle)
-        n_vals.append(nv)
-        n_errs.append(ne)
+    e_half = comp_df["E_half_val"].abs().tolist()
+    e_half_err = comp_df["E_half_std"].abs().tolist()
+    j_lim = comp_df["j_L_val"].abs().tolist()
+    j_lim_err = [0.0] * len(j_lim)
+    n_vals = comp_df["n_val"].tolist()
+    n_errs = comp_df["n_std"].tolist()
 
     axes[0].bar(
         cats, e_half, yerr=e_half_err, color=bar_colors, edgecolor="white", linewidth=0.5, capsize=4
@@ -343,8 +327,20 @@ def fig5_bar_chart(params: Dict[str, Any]) -> None:
     )
     axes[2].set_title("Electron Transfer Number (n)")
     axes[2].set_ylabel("n")
-    axes[2].axhline(y=params["kl_analysis"]["n_theoretical_4e"], color="red", ls="--", alpha=0.6, label="n=4 (4e- pathway)")
-    axes[2].axhline(y=params["kl_analysis"]["n_theoretical_2e"], color="blue", ls="--", alpha=0.6, label="n=2 (2e- pathway)")
+    axes[2].axhline(
+        y=params["kl_analysis"]["n_theoretical_4e"],
+        color="red",
+        ls="--",
+        alpha=0.6,
+        label="n=4 (4e- pathway)",
+    )
+    axes[2].axhline(
+        y=params["kl_analysis"]["n_theoretical_2e"],
+        color="blue",
+        ls="--",
+        alpha=0.6,
+        label="n=2 (2e- pathway)",
+    )
     axes[2].legend(fontsize=8)
     axes[2].tick_params(axis="x", rotation=10)
     for i, (v, e) in enumerate(zip(n_vals, n_errs)):

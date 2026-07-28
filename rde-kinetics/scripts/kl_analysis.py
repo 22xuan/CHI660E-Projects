@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Tuple
 from scipy import stats
 from common import load_params, angular_velocity
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = SCRIPT_DIR.parent
 
@@ -198,7 +199,8 @@ def half_wave_analysis(all_df: pd.DataFrame, params: Dict[str, Any]) -> pd.DataF
             ].mean()
         )
         i_half = (i_base + i_lim) / 2
-        trans = df[(df["potential_v"] >= -0.05) & (df["potential_v"] <= 0.45)]
+        hw = params["kl_analysis"].get("half_wave_search_range", [-0.05, 0.45])
+        trans = df[(df["potential_v"] >= hw[0]) & (df["potential_v"] <= hw[1])]
         if len(trans) > 0:
             idx = (trans["current_a"] - i_half).abs().idxmin()
             e_half = trans.loc[idx, "potential_v"]

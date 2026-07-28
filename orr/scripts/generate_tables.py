@@ -89,10 +89,21 @@ def build_merged_summary(
             {
                 "催化剂": cat_name,
                 "E_onset (V vs RHE)": fmt_mean_std(e_onset_vs_rhe_vals),
+                "E_onset_val": float(np.mean(e_onset_vs_rhe_vals))
+                if e_onset_vs_rhe_vals
+                else np.nan,
                 "E_1/2 (V vs RHE)": fmt_mean_std(e_half_vs_rhe_vals),
+                "E_half_val": float(np.mean(e_half_vs_rhe_vals)) if e_half_vs_rhe_vals else np.nan,
+                "E_half_std": float(np.std(e_half_vs_rhe_vals, ddof=1))
+                if len(e_half_vs_rhe_vals) > 1
+                else 0.0,
                 "|j_L| (mA/cm2) @1600r": fmt_mean_std(j_lim_vals, 2),
+                "j_L_val": float(np.mean(j_lim_vals)) if j_lim_vals else np.nan,
                 "n (电子转移数)": fmt_mean_std(n_vals, 2),
+                "n_val": float(np.mean(n_vals)) if n_vals else np.nan,
+                "n_std": float(np.std(n_vals, ddof=1)) if len(n_vals) > 1 else 0.0,
                 "Tafel b (mV/dec)": fmt_mean_std(tafel_b_vals, 1),
+                "Tafel_b_val": float(np.mean(tafel_b_vals)) if tafel_b_vals else np.nan,
             }
         )
 

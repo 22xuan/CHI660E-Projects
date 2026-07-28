@@ -79,9 +79,11 @@ def compute_diffusion_coefficient(
     i_l_values: List[float],
     omega_sqrt_values: List[float],
     params: Dict[str, Any],
-    n: int = 1,
+    n: int | None = None,
 ) -> Tuple[float, float, float]:
     """从 Levich 斜率计算扩散系数 D"""
+    if n is None:
+        n = params["levich"]["n_electrons"]
     if len(i_l_values) < 3:
         return np.nan, np.nan, np.nan
 

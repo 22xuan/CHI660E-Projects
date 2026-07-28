@@ -17,14 +17,16 @@ experiment:
     - { pH: 6.0, label: "pH6.0", file: "10.10.17_andra_6.4cm2_80C_6pH_IMP.mpt" }
 
 equivalent_circuit:
-  model: "R(QR)"
-  name: "Randles circuit"
-  description: "Rs + CPE//Rp"
+  model: "R(Q(RW))"
+  name: "Randles with Warburg"
+  description: "Rs + CPE1//(R1 + ZW)"
   parameters:
     - { symbol: "Rs", unit: "Ω·cm2", meaning: "Solution resistance" }
-    - { symbol: "Rp", unit: "Ω·cm2", meaning: "Polarization (charge transfer) resistance" }
-    - { symbol: "Q", unit: "S·s^n/cm2", meaning: "CPE coefficient" }
-    - { symbol: "n", unit: "-", meaning: "CPE exponent (n->1 = ideal capacitor)" }
+    - { symbol: "R1", unit: "Ω·cm2", meaning: "Charge transfer resistance" }
+    - { symbol: "Q1", unit: "S·s^n/cm2", meaning: "CPE coefficient" }
+    - { symbol: "n1", unit: "-", meaning: "CPE exponent (n->1 = ideal capacitor)" }
+    - { symbol: "W",  unit: "Ω·s^P/cm2", meaning: "Warburg coefficient" }
+    - { symbol: "P",  unit: "-", meaning: "Warburg exponent (P=0.5 semi-infinite)" }
 
 fitting:
   weighting: "modulus"  # 1/|Z| 加权，平衡高低频

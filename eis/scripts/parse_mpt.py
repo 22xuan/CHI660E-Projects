@@ -23,37 +23,35 @@ def _to_float(s: str) -> float:
 
 def parse_mpt(filepath: str, area_cm2: float = 1.0) -> pd.DataFrame:
     n_skip = 0
-    columns: List[str] = []
     rows: List[Tuple[float, float, float, float, float]] = []
 
     with open(filepath, encoding="latin-1") as f:
-        for line in f:
-            if line.startswith("Nb header lines"):
-                n_skip = int(line.split(":")[1].strip())
-            if line.startswith("freq/Hz") and not columns:
-                columns = line.strip().split("\t")
-                break
+        lines = f.readlines()
 
-    with open(filepath, encoding="latin-1") as f:
-        for i, line in enumerate(f):
-            if i < n_skip:
-                continue
-            if line.startswith("Loop"):
-                break
-            if line.startswith("freq/Hz"):
-                continue
-            parts = line.strip().split("\t")
-            if len(parts) < 3:
-                continue
-            try:
-                freq = _to_float(parts[0])
-                zre = _to_float(parts[1]) * area_cm2
-                zim = _to_float(parts[2]) * area_cm2
-                zmod = _to_float(parts[3]) * area_cm2
-                phase = _to_float(parts[4])
-                rows.append((freq, zre, zim, zmod, phase))
-            except (ValueError, IndexError):
-                continue
+    for line in lines:
+        if line.startswith("Nb header lines"):
+            n_skip = int(line.split(":")[1].strip())
+            break
+
+    for i, line in enumerate(lines):
+        if i < n_skip:
+            continue
+        if line.startswith("Loop"):
+            break
+        if line.startswith("freq/Hz"):
+            continue
+        parts = line.strip().split("\t")
+        if len(parts) < 3:
+            continue
+        try:
+            freq = _to_float(parts[0])
+            zre = _to_float(parts[1]) * area_cm2
+            zim = _to_float(parts[2]) * area_cm2
+            zmod = _to_float(parts[3]) * area_cm2
+            phase = _to_float(parts[4])
+            rows.append((freq, zre, zim, zmod, phase))
+        except (ValueError, IndexError):
+            continue
 
     df = pd.DataFrame(
         rows, columns=["freq_Hz", "Zre_ohm_cm2", "Zim_ohm_cm2", "Zmod_ohm_cm2", "Phase_deg"]
@@ -149,7 +147,7 @@ def parse_lpr(filepath: str, area_cm2: float = 1.0) -> tuple:
     x = np.array([rows_e[i] for i in range(len(rows_e)) if mask[i]])
     y = np.array([rows_i[i] for i in range(len(rows_i)) if mask[i]])
     slope, _, r_val, _, _ = stats.linregress(x, y)
-    rp = abs(1.0 / slope) * area_cm2 if abs(slope) > 1e-12 else np.nan
+    rp = abs(1.0 / slope) if abs(slope) > 1e-12 else np.nan
     return ocp, rp, float(r_val) ** 2, len(x)
 
 

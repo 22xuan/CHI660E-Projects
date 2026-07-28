@@ -209,21 +209,23 @@ def fig4_tafel() -> None:
             y_fit = (x_fit - intercept) / slope
             ax.plot(x_fit, y_fit, "k--", lw=1.5, label=f"b = {b:.1f} mV/dec (R2={r2:.3f})")
 
-        # 参考线 a=0.5
+        # 参考线 alpha=0.5 with correct i0 intercept
         x_ref = np.linspace(g_raw["log_ik"].min(), g_raw["log_ik"].max(), 50)
-        ax.plot(
-            x_ref,
+        b_ref = (
             2.303
             * 8.314
             * (CFG["electrolyte"]["temperature_c"] + 273.15)
             / (0.5 * CFG["electrolyte"]["faraday_constant"])
             * 1000
-            * x_ref,
+        )
+        ax.plot(
+            x_ref,
+            b_ref * (x_ref - intercept),
             "gray",
             lw=1,
             alpha=0.5,
             ls=":",
-            label=f"alpha=0.5 reference",
+            label=f"b={b_ref:.0f} (alpha=0.5)",
         )
 
         ax.set_title(f"Op.{GLABEL[g]} — Tafel Plot")

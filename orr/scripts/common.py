@@ -65,6 +65,13 @@ def find_onset_potential(
     below = df[df["current_density_ma_cm2"] < threshold]
     if len(below) == 0:
         return np.nan
+    # Require ≥3 consecutive points below threshold (noise filter)
+    diffs = below.index.to_series().diff()
+    groups = (diffs != 1).cumsum()
+    for _, g_idx in groups.items():
+        idxs = groups[groups == g_idx].index
+        if len(idxs) >= 3:
+            return float(below.loc[idxs[0], "potential_v"])
     return float(below["potential_v"].iloc[0])
 
 
@@ -103,7 +110,8 @@ def find_limiting_current_density(df: pd.DataFrame, params: Dict[str, Any]) -> T
 def compute_jk_corrected(j: float, j_lim: float) -> float:
     if abs(j) < 1e-12 or abs(j_lim) < 1e-12:
         return j
-    return (abs(j) * abs(j_lim)) / (abs(j_lim) - abs(j)) if abs(j_lim) > abs(j) else j
+    sign = 1 if j > 0 else -1
+    return sign * (abs(j) * abs(j_lim)) / (abs(j_lim) - abs(j)) if abs(j_lim) > abs(j) else j
 
 
 def extract_kl_data(
@@ -157,6 +165,9 @@ def compute_electron_numbers(
     kl_results: Dict[str, Dict[float, Dict[str, float]]],
     params: Dict[str, Any],
 ) -> Dict[str, Dict[float, Dict[str, float]]]:
+    import copy
+
+    kl_results = copy.deepcopy(kl_results)
     B = levich_constant(params)
 
     for group, pot_results in kl_results.items():
