@@ -1,0 +1,29 @@
+# 生成文件
+output/processed/
+output/figures/
+output/tables/
+output/origin_input/
+output/*.pkl
+
+# 数据（对外不可见）
+data
+data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# LaTeX 临时文件
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# 系统
+.DS_Store

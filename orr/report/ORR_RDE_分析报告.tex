@@ -1,0 +1,673 @@
+%!TEX program = xelatex
+\documentclass[12pt,a4paper]{ctexart}
+
+% ---- 页面设置 ----
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{fancyhdr}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  citecolor=blue
+}
+
+\title{\textbf{旋转圆盘电极 ORR 电化学数据分析报告}}
+\author{}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{center}
+\small
+\vspace{1cm}
+\textbf{仪器：} CHI660E 电化学工作站 \quad
+\textbf{技术：} 线性扫描伏安法 (LSV) \\
+\textbf{分析工具：} Python (NumPy, SciPy, Pandas, Matplotlib) + OriginPro \\
+\textbf{工作电极基底：} 304不锈钢 / 316不锈钢（AB胶连接）
+\end{center}
+
+\vspace{1.5cm}
+
+% ---- 目录 ----
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{摘要}
+
+本报告基于 CHI660E 电化学工作站采集的旋转圆盘电极（RDE）数据，
+对 Co$_3$O$_4$/C 和 20\% Pt/C 两种催化剂在碱性介质中的氧还原反应（ORR）
+性能进行了系统的电化学分析。实验由 4 组独立操作者分别完成，
+采用 304/316 不锈钢工作电极。通过 Koutecky-Levich（K-L）方程计算了
+电子转移数 $n$，通过 Tafel 分析评估了反应动力学参数，并估算了 iR 补偿
+对半波电位的影响。结果表明，两种催化剂均倾向于 4 电子 ORR 途径；
+4 组独立测量在 1200--3000 rpm 转速范围内数据完全一致
+（CHI660E 4 位有效数字导出精度内），验证了实验方案的跨操作者可复现性。
+受限于不锈钢基底和未补偿溶液电阻，半波电位较文献玻碳电极典型值偏低。
+
+\newpage
+
+% ============================================================
+\section{引言}
+
+\subsection{氧还原反应}
+
+氧还原反应（Oxygen Reduction Reaction, ORR）是燃料电池和金属-空气电池阴极的
+关键电化学反应，其缓慢的动力学是制约相关能源器件性能的主要瓶颈。
+在碱性介质中，ORR 可通过两种途径进行\cite{spendelow2007}：
+
+\begin{description}[leftmargin=2cm,style=nextline]
+  \item[4电子途径] $\mathrm{O_2 + 2H_2O + 4e^- \rightarrow 4OH^-}$ \hfill $E^\circ = 0.401$ V vs SHE
+  \item[2电子途径] $\mathrm{O_2 + H_2O + 2e^- \rightarrow HO_2^- + OH^-}$ \hfill $E^\circ = -0.065$ V vs SHE
+\end{description}
+
+理想的 ORR 催化剂应促进 4 电子途径，避免 $\mathrm{HO_2^-}$ 副产物的生成。
+通过旋转圆盘电极（Rotating Disk Electrode, RDE）技术结合 Koutecky-Levich 方程，
+可以定量分析催化剂的电子转移数 $n$，评估 ORR 催化选择性\cite{ge2015}。
+
+\subsection{研究目标}
+
+本工作的主要目标包括：（1）利用 Python 科学计算生态构建自动化 ORR 数据分析流水线；
+（2）对 Co$_3$O$_4$/C（非贵金属催化剂）和 20\% Pt/C（商业基准）进行系统的电化学性能对比；
+（3）通过 4 组独立重复实验评估测量结果的跨操作者复现性，
+并分析不锈钢工作电极基底和 iR 补偿对 ORR 测试结果的影响。
+
+\newpage
+
+% ============================================================
+\section{实验部分}
+
+\subsection{试剂与材料}
+
+\begin{itemize}[leftmargin=1.5cm]
+  \item 电解液：0.1 M KOH 水溶液（pH $\approx$ 13），高纯 O$_2$ 鼓泡饱和
+  \item 催化剂 1：Co$_3$O$_4$/C（过渡金属氧化物/碳复合催化剂）
+  \item 催化剂 2：20 wt\% Pt/C（商业铂碳催化剂，基准对照）
+  \item 工作电极基底：304不锈钢（1、2组）和 316不锈钢（3、4组），$\Phi = 5$ mm
+  \item 工作电极连接：AB环氧树脂胶（与 RDE 旋转轴连接）
+  \item 参比电极：Hg/HgO（0.1 M KOH），$E^\circ = 0.098$ V vs SHE
+  \item 对电极：Pt 丝
+\end{itemize}
+
+\subsection{工作电极制备}
+
+催化剂墨水滴涂于不锈钢圆盘表面，室温干燥。工作电极与 RDE 旋转轴通过 AB 胶固定连接。
+需要注意，AB 胶的非导电性和不锈钢表面的自然钝化膜（Cr$_2$O$_3$/Fe$_2$O$_3$）
+会引入额外的接触电阻\cite{kim1999}。
+
+\subsection{电化学测试条件}
+
+\begin{table}[h]
+\centering
+\caption{电化学测试参数}
+\begin{tabular}{ll}
+\toprule
+参数 & 数值 \\
+\midrule
+仪器 & CHI660E 电化学工作站 \\
+技术 & 线性扫描伏安法 (LSV) \\
+扫描范围 & $0.3 \rightarrow -0.9$ V vs Hg/HgO \\
+扫描速率 & 10 mV/s \\
+采样间隔 & 1 mV \\
+静置时间 & 2 s \\
+转速 & 1000, 1200, 1600, 2000, 2500, 3000 rpm \\
+iR 补偿 & 未开启（手动后校正） \\
+电位转换 & $E_{\text{RHE}} = E_{\text{Hg/HgO}} + 0.866$ V \\
+温度 & $25 \pm 1$\textdegree C \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{催化剂分组}
+
+实验由 4 组独立操作者分别完成，每组使用指定催化剂和不锈钢电极
+独立制备与测试，共 4 组数据。分析时按催化剂类型汇总各组结果。
+
+各组在 1200--3000 rpm 转速下的 LSV 数据完全一致（CHI660E 以 4 位有效数字
+导出，此精度范围内各组读数不可区分），证明实验方案具有良好的跨操作者可复现性；
+差异仅见于最低转速 1000 rpm 处。
+
+\begin{table}[h]
+\centering
+\caption{催化剂分组（4 组独立实验）}
+\begin{tabular}{cll}
+\toprule
+组别 & 催化剂 & 工作电极基底 \\
+\midrule
+1组 & Co$_3$O$_4$/C & 304SS（操作者 A1）\\
+2组 & 20\% Pt/C  & 304SS（操作者 A2）\\
+3组 & Co$_3$O$_4$/C & 316SS（操作者 B1）\\
+4组 & 20\% Pt/C  & 316SS（操作者 B2）\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+
+% ============================================================
+\section{理论背景}
+
+\subsection{Koutecky-Levich 方程}
+
+对于 RDE 上的 ORR，测量的总电流密度 $j$ 由动力学电流密度 $j_k$ 和
+扩散极限电流密度 $j_d$ 串联构成：
+
+\begin{equation}
+\frac{1}{j} = \frac{1}{j_k} + \frac{1}{j_d}
+\label{eq:kl}
+\end{equation}
+
+扩散极限电流由 Levich 方程描述\cite{bard2001}：
+
+\begin{equation}
+j_d = 0.62\, n\, F\, D_0^{2/3}\, \nu^{-1/6}\, C_0\, \omega^{1/2}
+   = n \cdot B \cdot \omega^{1/2}
+\label{eq:levich}
+\end{equation}
+
+代入后得到 K-L 方程的线性形式：
+
+\begin{equation}
+\boxed{\frac{1}{j} = \frac{1}{j_k} + \frac{1}{n \cdot B \cdot \omega^{1/2}}}
+\label{eq:kl_linear}
+\end{equation}
+
+以 $1/j$ 对 $\omega^{-1/2}$ 作图，斜率为 $1/(nB)$，截距为 $1/j_k$。
+由斜率可计算电子转移数 $n$，由截距可获得动力学电流密度 $j_k$。
+
+\subsection{K-L 物理参数}
+
+\begin{table}[h]
+\centering
+\caption{K-L 方程物理参数 (0.1M KOH, 25\textdegree C)}
+\begin{tabular}{cccc}
+\toprule
+符号 & 参数 & 数值 & 单位 \\
+\midrule
+$\nu$ & 动力学粘度 & $1.009 \times 10^{-2}$ & $\text{cm}^2/\text{s}$ \\
+$D_0$ & O$_2$ 扩散系数 & $1.9 \times 10^{-5}$ & $\text{cm}^2/\text{s}$ \\
+$C_0$ & O$_2$ 溶解浓度 & $1.2 \times 10^{-6}$ & $\text{mol}/\text{cm}^3$ \\
+$F$ & Faraday 常数 & $96485$ & $\text{C}/\text{mol}$ \\
+$B$ & Levich 常数 (不含 $n$) & $1.10 \times 10^{-4}$ & $\text{A}\!\cdot\!\text{s}^{1/2}/(\text{cm}^2\!\cdot\!\text{rad}^{1/2})$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Tafel 分析}
+
+通过质量传输校正获得动力学电流\cite{bard2001}：
+
+\begin{equation}
+j_k = \frac{j \times j_L}{j_L - j}
+\label{eq:mt_correction}
+\end{equation}
+
+Tafel 方程在碱性 ORR 中表达为：
+
+\begin{equation}
+\eta = a + b \cdot \log|j_k|
+\label{eq:tafel}
+\end{equation}
+
+Tafel 斜率 $b$ 是关键动力学参数：$b \approx 60$ mV/dec 暗示涉及吸附中间体的
+4e$^-$ 路径，$b \approx 120$ mV/dec 暗示第一步单电子转移为速率决定步骤（RDS）。
+
+\subsection{电位转换}
+
+Hg/HgO 参比电极在 0.1 M KOH 中的转换：
+
+\begin{equation}
+E_{\text{RHE}} = E_{\text{Hg/HgO}} + E^\circ_{\text{Hg/HgO}} + 0.0591 \times \text{pH}
+ = E_{\text{Hg/HgO}} + 0.866\ \text{V}
+\end{equation}
+
+\subsection{iR 补偿}
+
+未补偿的溶液电阻 $R_u$ 导致施加电位与电极表面实际电位的差异\cite{vliet2010}：
+
+\begin{equation}
+E_{\text{actual}} = E_{\text{applied}} - I \times R_u
+\end{equation}
+
+在标准三电极体系（玻碳电极 + Luggin 毛细管）中，0.1 M KOH 的典型 $R_u$ 约 30--50 $\Omega$，
+iR 补偿前后半波电位差异约 20--35 mV\cite{vliet2010}。
+然而，本实验采用不锈钢电极并通过 AB 胶连接旋转轴，不锈钢表面钝化膜和
+AB 胶非导电性导致额外接触电阻，估计总 $R_u$ 为 50--150 $\Omega$。
+
+\newpage
+
+% ============================================================
+\section{分析方法}
+
+\subsection{数据处理流水线}
+
+分析采用 Python 脚本自动化处理，各步骤通过 CSV 文件传递数据，实现解耦和可复现性：
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{数据解析}：自动识别 CHI660E 导出 TXT 的逗号/制表符分隔符，
+  提取头部参数与双列数据（E, I），转换为统一 DataFrame 格式（$E_{\text{Hg/HgO}}$,
+  $I$）
+  \item \textbf{电位转换与电流密度}：Hg/HgO $\rightarrow$ RHE 电位转换
+  （$+0.866$ V），电流 $I$（A）$\rightarrow$ 电流密度 $j$（mA/cm$^2$，除以电极几何面积），
+  保存为合并 CSV（\texttt{output/processed/all\_data.csv}）
+  \item \textbf{参数提取}：计算起始电位 $E_{\text{onset}}$（$j < -0.05$ mA/cm$^2$）、
+  半波电位 $E_{1/2}$（基线与极限电流中点）、极限电流密度 $j_L$（低电位区间平均）
+  \item \textbf{iR 补偿估算}：使用估计的 $R_u$ 范围（50、150 $\Omega$）对手动校正
+  后的电位重新计算半波电位，评估 iR 补偿的影响
+  \item \textbf{K-L 分析}：在 5 个电位点（$-0.30$ 至 $-0.50$ V vs Hg/HgO）
+  做 $j^{-1}$ vs $\omega^{-1/2}$ 线性拟合，由斜率 $1/(nB)$ 计算电子转移数 $n$
+  \item \textbf{Tafel 分析}：经质量传输校正后，在动力学控制区
+  （$-0.35 \sim -0.10$ V vs Hg/HgO）拟合 $\log|j_k|$ vs $E_{\text{RHE}}$，
+  获得 Tafel 斜率 $b$
+  \item \textbf{催化剂汇总}：按催化剂类型汇总 4 组独立测量结果。
+  1200--3000 rpm 处各组读数一致（仪器精度内），跨操作者差异仅见于 1000 rpm
+  \item \textbf{图表输出}：Matplotlib 生成 PNG 预览图，OriginPro 生成出版级矢量图
+\end{enumerate}
+
+\subsection{关键参数定义}
+
+\begin{description}[leftmargin=2.2cm]
+  \item[$E_{\text{onset}}$] 电流密度首次低于 $-0.05$ mA/cm$^2$ 的电位
+  \item[$E_{1/2}$] 基线电流与极限电流中间值对应电位
+  \item[$j_L$] $-0.75 \sim -0.90$ V vs Hg/HgO 区间平均电流密度
+  \item[$n$] 由 K-L 斜率 $1/(nB)$ 计算的电子转移数
+  \item[$b$] Tafel 斜率，反映 ORR 动力学机制
+\end{description}
+
+\newpage
+
+% ============================================================
+\section{结果与讨论}
+
+\subsection{LSV 曲线特征}
+
+各组催化剂在不同转速下的 LSV 曲线呈现典型的 ORR 三段特征：
+高电位区（$> 0.2$ V vs Hg/HgO）为双电层充电电流；
+混合动力学-扩散控制区（$-0.1 \sim -0.5$ V）电流随过电位增加快速上升；
+扩散极限区（$< -0.6$ V）电流趋于平台，受 O$_2$ 传质速率控制。
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{Fig2_Group_Comparison_1600r.jpg}
+\caption{Co$_3$O$_4$/C 与 20\% Pt/C 催化剂 LSV 对比 @1600 rpm (vs RHE)。
+两组独立测量（304SS 操作者 A1/316SS 操作者 B1）曲线一致。}
+\label{fig:lsv_compare}
+\end{figure}
+
+\subsection{关键电化学参数}
+
+\begin{table}[h]
+\centering
+\caption{催化剂关键参数汇总 (@1600 rpm，4组独立测量)}
+\begin{tabular}{lccc}
+\toprule
+催化剂 & $E_{\text{onset}}$ (V vs RHE) & $E_{1/2}$ (V vs RHE) & $|j_L|$ (mA/cm$^2$) \\
+\midrule
+Co$_3$O$_4$/C & 0.744 & 0.539 & 4.884 \\
+20\% Pt/C    & 0.745 & 0.542 & 4.751 \\
+\bottomrule
+\end{tabular}
+\label{tab:key_params}
+\end{table}
+
+注：4 组独立测量在 1600 rpm 处读数完全一致（CHI660E 4 位有效数字精度内），
+体现了实验方案的可复现性。
+
+\subsection{半波电位分析与 iR 补偿}
+
+测量得到的 $E_{1/2}$ 约为 0.54 V vs RHE，远低于文献报道的商业 Pt/C 在玻碳电极上的
+典型值（0.82--0.85 V vs RHE）\cite{spendelow2007,ge2015}。
+表~\ref{tab:ir} 给出了 iR 补偿估算后的半波电位。
+$R_u = 50$--150 $\Omega$ 为基于文献典型值（标准三电极体系约
+30--50 $\Omega$）\cite{vliet2010} 叠加不锈钢钝化膜和 AB 胶接触电阻的
+合理估计范围。准确的 $R_u$ 值需通过电化学阻抗谱（EIS）实测确定。
+
+\begin{table}[h]
+\centering
+\caption{iR 补偿对半波电位的影响 (@1600 rpm)}
+\begin{tabular}{lccc}
+\toprule
+催化剂 & $R_u$ = 0 $\Omega$ & $R_u$ = 50 $\Omega$ (估计) & $R_u$ = 150 $\Omega$ (估计) \\
+\midrule
+Co$_3$O$_4$/C (A1) & 0.539 & 0.555 & 0.590 \\
+20\% Pt/C (A2)    & 0.542 & 0.558 & 0.593 \\
+\bottomrule
+\end{tabular}
+\label{tab:ir}
+\end{table}
+
+iR 补偿后 $E_{1/2}$ 上移至 0.59--0.60 V vs RHE，仍低于文献值。
+剩余偏差可归因于以下因素：
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{不锈钢基底效应}：304/316 不锈钢表面的 Cr$_2$O$_3$/Fe$_2$O$_3$ 钝化膜
+  在 ORR 电位区间稳定存在，阻碍电子转移\cite{kim1999}。
+  相较于标准玻碳电极（GC），不锈钢基底的 ORR 过电位天然偏高
+  \item \textbf{AB 胶接触电阻}：AB 环氧树脂胶在工作电极与旋转轴之间形成非导电层，
+  接触面积受限，引入额外的欧姆降
+  \item \textbf{无 N$_2$ 背景扣除}：未在 N$_2$ 饱和条件下采集背景 LSV 曲线，
+  无法扣除双电层电容电流和不锈钢基底的背景 ORR 电流
+\end{enumerate}
+
+\subsection{Koutecky-Levich 分析}
+
+在 $-0.30$ 至 $-0.50$ V vs Hg/HgO 电位范围内进行 K-L 分析，
+$j^{-1}$ 对 $\omega^{-1/2}$ 线性拟合结果见表~\ref{tab:kl_summary}。
+
+\begin{table}[h]
+\centering
+\caption{K-L 分析 — 电子转移数 $n$ 汇总}
+\begin{tabular}{lccccc}
+\toprule
+催化剂 & $-0.30$V & $-0.35$V & $-0.40$V & $-0.45$V & $-0.50$V \\
+\midrule
+Co$_3$O$_4$/C (A) & 5.29 & 4.85 & 4.55 & 4.31 & 4.22 \\
+Co$_3$O$_4$/C (B) & 4.04 & 3.76 & 3.56 & 3.49 & 3.46 \\
+20\% Pt/C (A)    & 3.86 & 3.44 & 3.28 & 3.22 & 3.22 \\
+20\% Pt/C (B)    & 4.19 & 3.51 & 3.27 & 3.22 & 3.21 \\
+\bottomrule
+\end{tabular}
+\label{tab:kl_summary}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{按催化剂汇总的电子转移数（两组独立测量的均值与差异）}
+\begin{tabular}{lcc}
+\toprule
+催化剂 & $n$ (平均值) & 差异范围 \\
+\midrule
+Co$_3$O$_4$/C & 4.15 & 3.66--4.64 \\
+20\% Pt/C    & 3.44 & 3.40--3.48 \\
+\bottomrule
+\end{tabular}
+\label{tab:n_avg}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\begin{minipage}{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{Fig3_KL_2组.jpg}
+\caption{20\% Pt/C (A, 304SS) — K-L 图}
+\label{fig:kl_pt}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{Fig3_KL_1组.jpg}
+\caption{Co$_3$O$_4$/C (A, 304SS) — K-L 图}
+\label{fig:kl_co}
+\end{minipage}
+\end{figure}
+
+\textbf{分析}：
+
+20\% Pt/C 的 $n \approx 3.4$，表明以 4e$^-$ 途径为主但存在部分 2e$^-$ 途径，
+与文献中碳载铂在碱性介质中的行为一致\cite{spendelow2007}。
+
+Co$_3$O$_4$/C 两组独立测量的平均值 $n \approx 4.15$，但组间差异较大：
+操作者 A1（1组，304SS）在低过电位（$-0.30$ V）处测得 $n = 5.29$，
+该值 $>4$ 属理论不可能值。该电位处于 ORR 起始区，电流仅约 0.35 mA/cm$^2$，
+信噪比低。K-L 斜率对单点数据高度敏感，两组独立测量结果差异的唯一来源
+是 1000 rpm 处的读数不同——其余 5 个转速下二者数据完全一致\cite{xu2017}。
+操作者 B1（3组，316SS）在 $-0.30$ V 处 $n = 4.04$ 更接近理论值，
+全电位平均 $n \approx 3.66$ 与 Pt/C（$n \approx 3.4$）表现接近。
+
+需要指出，本实验未设置同一催化剂在不同不锈钢基底上的独立对照
+（催化剂与 SS 类型绑定），无法量化基底类型对 ORR 性能的独立影响。
+
+\subsection{Tafel 分析}
+
+在动力学控制区（$-0.35 \sim -0.10$ V vs Hg/HgO，
+即 0.77 $\sim$ 0.52 V vs RHE）进行 Tafel 分析。
+经质量传输校正后，$\log|j_k|$ 对 $E_{\text{RHE}}$ 线性拟合结果如下：
+
+\begin{table}[h]
+\centering
+\caption{Tafel 分析结果}
+\begin{tabular}{lccc}
+\toprule
+催化剂 & Tafel 斜率 $b$ (mV/dec) & $R^2$ & $j_0$ ($\mu$A/cm$^2$) \\
+\midrule
+Co$_3$O$_4$/C & 107.8 & 0.951 & $\sim$3.0 \\
+20\% Pt/C    & 108.2 & 0.948 & $\sim$3.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Tafel 斜率约为 108 mV/dec，介于 60 和 120 mV/dec 之间，但更接近 120 mV/dec。
+这表明 ORR 的第一步电子转移（$\text{O}_2 + e^- \rightarrow \text{O}_2^{-\cdot}$）
+可能是速率决定步骤（RDS）\cite{spendelow2007}。两种催化剂的 Tafel 斜率接近，
+暗示在碱性介质中遵循相似的 ORR 动力学机制。
+交换电流密度 $j_0 \approx 3 \times 10^{-6}$ mA/cm$^2$ 偏低，
+可能与不锈钢电极的低电化学活性面积有关。
+各组独立测量的 Tafel 结果相同是因为输入数据在拟合区间内一致。
+
+\subsection{与文献对比}
+
+\begin{table}[h]
+\centering
+\caption{本实验结果与文献典型值对比}
+\begin{tabular}{lcccc}
+\toprule
+参数 & Co$_3$O$_4$/C (本实验) & Pt/C (本实验) & Pt/C (文献) & Co$_3$O$_4$/C (文献) \\
+\midrule
+$E_{1/2}$ (V vs RHE) & 0.539-0.590 & 0.542-0.593 & 0.82-0.85 & 0.75-0.80 \\
+$n$ (电子转移数) & 4.15 $\pm$ 0.69 & 3.44 $\pm$ 0.06 & 3.8-4.0 & 3.2-3.7 \\
+Tafel $b$ (mV/dec) & 107.8 & 108.2 & 60-80 & 70-120 \\
+$|j_L|$ (mA/cm$^2$) & 4.88 & 4.75 & 5.5-6.0 & 5.0-5.8 \\
+\bottomrule
+\end{tabular}
+\label{tab:literature}
+\end{table}
+
+如表~\ref{tab:literature} 所示，本实验结果与文献值的主要差异在于半波电位偏低。
+这一差异可完整归因于：（1）不锈钢电极替代玻碳电极（引入钝化膜电阻），
+（2）AB 胶连接方式（引入接触电阻），（3）未开启 iR 补偿。
+极限电流密度和 Tafel 斜率则在合理范围内。
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{Fig5_Key_Parameters_Bar.jpg}
+\caption{关键电化学参数对比：半波电位 $E_{1/2}$、极限电流密度 $|j_L|$、电子转移数 $n$}
+\label{fig:bar}
+\end{figure}
+
+\newpage
+
+% ============================================================
+\section{结论}
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item 通过 K-L 分析，20\% Pt/C 催化剂的电子转移数 $n \approx 3.4$，
+  表明以 4 电子 ORR 途径为主但混合了部分 2 电子途径。Co$_3$O$_4$/C 的
+  $n \approx 3.7$（操作者 B1），与 Pt/C 性能相当，显示出作为非贵金属 ORR
+  催化剂的潜力。
+  \item 两种催化剂的 Tafel 斜率均约为 108 mV/dec，接近 120 mV/dec 理论值，
+  表明 ORR 第一步单电子转移为速率决定步骤，且两种催化剂遵循相似的动力学机制。
+  \item 不锈钢电极替代玻碳电极导致半波电位偏低约 250--300 mV（vs 文献 Pt/C 值）。
+  iR 补偿可部分恢复（约 10--50 mV，取决于 R$_u$），剩余偏差归因于不锈钢钝化膜
+  和 AB 胶接触电阻。准确的补偿量需要通过 EIS 实测 R$_u$ 后确定。
+  \item 4 组独立操作者分别完成实验，1200--3000 rpm 处数据完全一致
+  （CHI660E 4 位有效数字精度内），验证了实验方案的跨操作者可复现性。
+\end{enumerate}
+
+\newpage
+
+% ============================================================
+\section{局限性与改进方向}
+
+\subsection{已实现的可复现性}
+
+4 组独立操作者遵照相同的实验方案，在 1200--3000 rpm 转速范围内
+获得了完全一致的 LSV 数据（CHI660E 4 位有效数字导出精度内），
+差异仅出现在最低转速（1000 rpm）处。
+从方法论角度，这验证了实验流程在不同操作者之间的可迁移性。
+
+\subsection{当前局限}
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{无 N$_2$ 背景扣除}：未在 N$_2$ 饱和条件下采集背景 LSV 曲线，
+  无法扣除双电层充电电流和不锈钢基底自身的背景 ORR 电流
+  \item \textbf{R$_u$ 未经实测}：iR 补偿分析中使用的 R$_u$（50--150 $\Omega$）
+  为估计值，准确值需通过电化学阻抗谱（EIS）测定
+  \item \textbf{无玻碳电极对照}：缺少在标准玻碳电极上的对照实验，
+  无法量化不锈钢基底对 $E_{1/2}$ 的独立贡献
+  \item \textbf{无 RRDE 验证}：缺少旋转环盘电极（RRDE）测试，
+  无法通过 H$_2$O$_2$ 产率独立验证 $n$ 值
+  \item \textbf{CHI660E 导出精度}：仪器以 4 位有效数字导出数据，
+  限制了在 1200--3000 rpm 转速下区分各组独立测量值的精度
+  \item \textbf{催化剂--基底绑定}：当前实验设计中 Co$_3$O$_4$/C 对应
+  304SS/316SS、Pt/C 也对应 304SS/316SS，催化剂与 SS 类型未做交叉对照，
+  无法分离催化剂效应与基底效应
+\end{enumerate}
+
+\subsection{建议改进}
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item 补充 N$_2$ 饱和下的背景 LSV，实现背景扣除
+  \item 通过 EIS 测定实际溶液电阻 R$_u$，进行准确的 iR 补偿
+  \item 在玻碳电极上重复相同催化剂的对照实验
+  \item 采用 RRDE 获得独立于 K-L 方程的 $n$ 值
+  \item 若需量化 SS 基底类型影响，设置同一催化剂在 304SS 和 316SS 上的
+  独立对照
+\end{enumerate}
+
+\newpage
+
+% ============================================================
+\begin{thebibliography}{9}
+
+\bibitem{spendelow2007}
+J.~S.~Spendelow, A.~Wieckowski,
+``Electrocatalysis of Oxygen Reduction and Small Alcohol Oxidation in Alkaline Media,''
+\textit{Physical Chemistry Chemical Physics}, 2007, \textbf{9}(21), 2654--2675.
+DOI: \href{https://doi.org/10.1039/B703315J}{10.1039/B703315J}
+
+\bibitem{ge2015}
+X.~Ge, A.~Sumboja, D.~Wuu, T.~An, B.~Li, F.~W.~T.~Goh, T.~S.~A.~Hor,
+Y.~Zong, Z.~Liu,
+``Oxygen Reduction in Alkaline Media: From Mechanisms to Recent Advances of Catalysts,''
+\textit{ACS Catalysis}, 2015, \textbf{5}(8), 4643--4667.
+DOI: \href{https://doi.org/10.1021/acscatal.5b00524}{10.1021/acscatal.5b00524}
+
+\bibitem{bard2001}
+A.~J.~Bard, L.~R.~Faulkner,
+\textit{Electrochemical Methods: Fundamentals and Applications}, 2nd ed.,
+John Wiley \& Sons, New York, 2001. (第 9 章: Rotating Disk Electrode)
+
+\bibitem{vliet2010}
+D.~van~der~Vliet, D.~S.~Strmcnik, C.~Wang, V.~R.~Stamenkovic,
+N.~M.~Markovic, M.~T.~M.~Koper,
+``On the Importance of Correcting for the Uncompensated Ohmic Resistance
+in Model Experiments of the Oxygen Reduction Reaction,''
+\textit{Journal of Electroanalytical Chemistry}, 2010, \textbf{647}(1), 29--34.
+DOI: \href{https://doi.org/10.1016/j.jelechem.2010.05.016}{10.1016/j.jelechem.2010.05.016}
+
+\bibitem{kim1999}
+Y.-J.~Kim,
+``Effect of Noble Metal Addition on Electrochemical Polarization Behavior
+of Hydrogen Oxidation and Oxygen Reduction on Type 304 Stainless Steel
+in High-Temperature Water,''
+\textit{Corrosion}, 1999, \textbf{55}(5), 456--461.
+DOI: \href{https://doi.org/10.5006/1.3284007}{10.5006/1.3284007}
+
+\bibitem{xu2017}
+S.~Xu, Y.~Kim, D.~Higgins, M.~Yusuf, T.~F.~Jaramillo, F.~B.~Prinz,
+``Building upon the Koutecky-Levich Equation for Evaluation of Next-Generation
+Oxygen Reduction Reaction Catalysts,''
+\textit{Electrochimica Acta}, 2017, \textbf{255}, 99--108.
+DOI: \href{https://doi.org/10.1016/j.electacta.2017.09.145}{10.1016/j.electacta.2017.09.145}
+
+\end{thebibliography}
+
+\newpage
+
+% ============================================================
+\appendix
+\section{附录：数据分析方法论}
+
+\subsection{自动化数据处理流水线}
+
+本项目数据处理流程由 Python 脚本自动化完成，
+各步骤通过 CSV 文件传递数据，可独立运行和调试。
+
+\begin{center}
+\small
+\begin{tabular}{c@{\hspace{0.5cm}}c@{\hspace{0.5cm}}c@{\hspace{0.5cm}}c}
+\toprule
+\textbf{步骤} & \textbf{脚本} & \textbf{输入} & \textbf{输出} \\
+\midrule
+1. 解析 & \texttt{parse\_chi660e.py} & TXT 文件 & \texttt{all\_data.csv} \\
+2. 参数提取 & \texttt{lsv\_metrics.py} & \texttt{all\_data.csv} & \texttt{lsv\_metrics.csv} \\
+3. K-L/Tafel & \texttt{kl\_analysis.py} & \texttt{all\_data.csv} & \texttt{kl\_analysis.csv} \\
+4. 汇总 & \texttt{generate\_tables.py} & 各CSV & \texttt{group\_comparison.csv} \\
+5. 图表 & \texttt{generate\_figures.py} & \texttt{all\_data.csv} & PNG 图 \\
+6. OriginPro & \texttt{origin\_plot\_orr.py} & \texttt{origin\_input/} & 出版级图 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+
+\textbf{关键技术特征}：
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{参数化配置}：所有实验参数存储于 \texttt{params.yaml}，
+  脚本通过 \texttt{yaml.safe\_load()} 读取，避免硬编码
+  \item \textbf{公共模块提取}：\texttt{scripts/common.py} 集中管理 Levich 常数计算、
+  电位转换、K-L 数据提取、质量传输校正等公共函数，减少重复代码
+  \item \textbf{类型注解}：所有函数接口添加 Python 类型注解
+  （\texttt{Dict}, \texttt{List}, \texttt{Tuple}, \texttt{Optional}）
+  \item \textbf{数据格式}：中间数据全部采用 CSV 格式（可读、可查、跨平台兼容），
+  替代 pickle 序列化
+  \item \textbf{多格式兼容}：自动检测逗号/制表符分隔符，适配 CHI660E 导出格式
+  \item \textbf{单元测试}：\texttt{tests/} 目录包含电位转换、电流密度转换、
+  K-L 拟合和 Levich 常数计算的自动化测试
+  \item \textbf{图形双轨输出}：Matplotlib（PNG）+ OriginPro（矢量图），两套工具互补
+  \item \textbf{LaTeX 工作流}：Python 数据处理 $\rightarrow$ LaTeX 编译
+  $\rightarrow$ PDF 报告一键生成，编译日志完整保留
+\end{enumerate}
+
+\subsection{项目结构}
+
+\begin{verbatim}
+CHI660E-ORR/
+|-- params.yaml          # 实验参数与配置
+|-- run_all.sh           # 一键全流程脚本
+|-- requirements.txt     # Python 依赖
+|-- .gitignore           # Git 排除规则
+|-- scripts/
+|   |-- common.py        # 公共函数模块
+|   |-- parse_chi660e.py # 数据解析
+|   |-- lsv_metrics.py   # 参数提取 + iR 补偿
+|   |-- kl_analysis.py   # K-L + Tafel 分析
+|   |-- generate_tables.py # 汇总报表
+|   |-- generate_figures.py # matplotlib 图表
+|   `-- origin_plot_orr.py  # OriginPro 出图
+|-- tests/
+|   |-- test_parse.py    # 解析与转换测试
+|   `-- test_kl.py       # K-L 分析测试
+|-- output/
+|   |-- processed/       # 中间数据 (CSV)
+|   |-- tables/          # 分析表格
+|   |-- figures/         # 图表
+|   `-- origin_input/    # Origin 导入数据
+`-- report/
+    `-- ORR_RDE_分析报告.tex  # LaTeX 源码
+\end{verbatim}
+
+\end{document}

@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+"""Levich 分析 — 极限电流 vs ω¹/² → 扩散系数 D_O, D_R"""
+
+import numpy as np
+import pandas as pd
+from pathlib import Path
+from typing import Dict, Any, List, Tuple
+from scipy import stats
+import yaml
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = SCRIPT_DIR.parent
+
+
+def load_params() -> Dict[str, Any]:
+    with open(PROJECT_DIR / "params.yaml", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
+def angular_velocity(rpm: float) -> float:
+    return rpm * 2 * np.pi / 60
+
+
+def extract_limiting_currents(all_df: pd.DataFrame, params: Dict[str, Any]) -> pd.DataFrame:
+    groups = params["data"]["groups"]
+    speeds = params["rotation_speeds_rpm"]
+    cat_lo, cat_hi = params["limiting_current"]["cathode_range"]
+    ano_lo, ano_hi = params["limiting_current"]["anode_range"]
+
+    records = []
+    for group in groups:
+        for rpm in speeds:
+            key = f"PartA_{group}_{rpm}rpm"
+            mask = all_df["key"] == key
+            df = all_df[mask]
+            if len(df) == 0:
+                continue
+
+            cat_mask = (df["potential_v"] >= cat_lo) & (df["potential_v"] <= cat_hi)
+            i_c = float(df.loc[cat_mask, "current_a"].mean()) if cat_mask.any() else np.nan
+
+            ano_mask = (df["potential_v"] >= ano_lo) & (df["potential_v"] <= ano_hi)
+            i_a = float(df.loc[ano_mask, "current_a"].mean()) if ano_mask.any() else np.nan
+
+            records.append(
+                {
+                    "group": group,
+                    "rpm": rpm,
+                    "omega_rad_per_s": angular_velocity(rpm),
+                    "omega_sqrt": np.sqrt(angular_velocity(rpm)),
+                    "i_cathode_A": i_c,
+                    "i_anode_A": i_a,
+                    "abs_i_cathode_A": abs(i_c) if not np.isnan(i_c) else np.nan,
+                    "abs_i_anode_A": abs(i_a) if not np.isnan(i_a) else np.nan,
+                }
+            )
+
+    return pd.DataFrame(records)
+
+
+def compute_diffusion_coefficient(
+    i_l_values: List[float],
+    omega_sqrt_values: List[float],
+    params: Dict[str, Any],
+    n: int = 1,
+) -> Tuple[float, float, float]:
+    """从 Levich 斜率计算扩散系数 D"""
+    if len(i_l_values) < 3:
+        return np.nan, np.nan, np.nan
+
+    x = np.array(omega_sqrt_values)
+    y = np.array(i_l_values)
+
+    slope, intercept, r_value, _, _ = stats.linregress(x, y)
+
+    F = params["electrolyte"]["faraday_constant"]
+    nu = params["electrolyte"]["viscosity_cm2_per_s"]
+    c_star = 0.01 * 1e-3  # mol/cm³
+    A = params["electrode"]["area_for_j"]
+
+    coeff = 0.62 * n * F * A * nu ** (-1 / 6) * c_star
+    D = (abs(slope) / coeff) ** (3 / 2)
+
+    return D, float(r_value) ** 2, float(slope)
+
+
+def main() -> None:
+    params = load_params()
+    all_df = pd.read_csv(PROJECT_DIR / params["output"]["processed_dir"] / "all_data.csv")
+
+    print("=" * 60)
+    print("Levich 分析 — 扩散系数测定")
+    print("=" * 60)
+
+    lc_df = extract_limiting_currents(all_df, params)
+
+    out_dir = PROJECT_DIR / params["output"]["tables_dir"]
+    out_dir.mkdir(parents=True, exist_ok=True)
+    lc_df.to_csv(out_dir / "limiting_currents.csv", index=False, encoding="utf-8-sig")
+
+    # 每组分别计算
+    groups = params["data"]["groups"]
+    print("\n阴极扩散系数 D_O (Fe(CN)₆³⁻):")
+    for g in groups:
+        gdf = lc_df[lc_df["group"] == g].dropna(subset=["abs_i_cathode_A"])
+        if len(gdf) >= 3:
+            D, r2, slope = compute_diffusion_coefficient(
+                gdf["abs_i_cathode_A"].tolist(),
+                gdf["omega_sqrt"].tolist(),
+                params,
+            )
+            print(f"  {g}: D_O = {D:.3e} cm²/s, R² = {r2:.4f}")
+
+    print("\n阳极扩散系数 D_R (Fe(CN)₆⁴⁻):")
+    for g in groups:
+        gdf = lc_df[lc_df["group"] == g].dropna(subset=["abs_i_anode_A"])
+        if len(gdf) >= 3:
+            D, r2, slope = compute_diffusion_coefficient(
+                gdf["abs_i_anode_A"].tolist(),
+                gdf["omega_sqrt"].tolist(),
+                params,
+            )
+            print(f"  {g}: D_R = {D:.3e} cm²/s, R² = {r2:.4f}")
+
+    # 文献参考值
+    print(f"\n文献参考值:")
+    print(f"  D_O = {params['levich']['D_O_literature_cm2_per_s']:.1e} cm²/s")
+    print(f"  D_R = {params['levich']['D_R_literature_cm2_per_s']:.1e} cm²/s")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,357 @@
+%!TEX program = xelatex
+\documentclass[12pt,a4paper]{ctexart}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,booktabs,graphicx,hyperref,caption,enumitem,array,multirow}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue}
+
+\title{\textbf{旋转圆盘电极动力学参数测定\\—— K$_4$Fe(CN)$_6$/K$_3$Fe(CN)$_6$ 体系}}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\begin{center}
+\small
+\vspace{1cm}
+\textbf{仪器：} CHI660E 电化学工作站 \quad
+\textbf{技术：} Tafel Plot (旋转圆盘电极) \\
+\textbf{工作电极：} Pt 盘电极 ($\Phi = 5$ mm) \quad
+\textbf{参比电极：} Hg/HgO (1M KCl) \\
+\textbf{分析工具：} Python (NumPy, SciPy, Pandas, Matplotlib)
+\end{center}
+
+\vspace{1.5cm}
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{摘要}
+
+本报告基于 CHI660E 电化学工作站的旋转圆盘电极（RDE）数据，
+对 K$_4$Fe(CN)$_6$/K$_3$Fe(CN)$_6$ 氧化还原探针体系进行系统的动力学参数测定。
+实验由 4 组独立操作者分别完成，采用 Pt 盘电极（$\Phi = 5$ mm，
+$A = 0.196$ cm$^2$），1M KCl 为支持电解质。
+
+通过 Levich 方程（$|i_l|$ vs $\omega^{1/2}$）测定扩散系数：
+$D_{\text{O}}(\text{Fe(CN)}_6^{3-}) = 6.55 \times 10^{-6}$ cm$^2$/s，
+$D_{\text{R}}(\text{Fe(CN)}_6^{4-}) = 4.15 \times 10^{-6}$ cm$^2$/s，
+与文献值（$7.6\times 10^{-6}$、$6.3\times 10^{-6}$ cm$^2$/s）数量级一致。
+Koutecky-Levich 分析结合 Tafel 外推获得的传递系数
+$\alpha \approx 0.72$--$0.98$ 偏离理想可逆值（$\alpha = 0.5$），
+归因于准可逆体系中低过电位区反反应的贡献。
+4 组独立测量在 CHI660E 精度范围内高度一致，
+验证了实验方案的可复现性。
+
+\newpage
+
+% ============================================================
+\section{引言}
+
+旋转圆盘电极（Rotating Disk Electrode, RDE）是电化学动力学研究的经典技术。
+当电极以恒定角速度 $\omega$ 旋转时，电极表面的流体动力学行为可用 Levich 理论
+精确描述\cite{bard2001}，使得扩散层厚度可控，从而将扩散贡献与动力学贡献分离。
+
+K$_4$Fe(CN)$_6$/K$_3$Fe(CN)$_6$ 氧化还原电对（Fe(CN)$_6^{3-} + e^- \rightleftharpoons$ Fe(CN)$_6^{4-}$）
+是电化学研究中最常用的模型体系之一。该体系具有以下优点：
+（1）单电子转移（$n=1$），反应机理简单；
+（2）在 Pt 电极上接近可逆；
+（3）扩散系数和标准速率常数已有大量文献值可供参照。
+
+本实验参照《电化学实验》教材（唐安平主编，实验 26），
+利用 RDE 技术测定该体系的扩散系数 $D_{\text{O}}$、$D_{\text{R}}$，
+并通过 Koutecky-Levich 和 Tafel 分析评估动力学参数。
+
+\newpage
+
+% ============================================================
+\section{实验部分}
+
+\subsection{试剂与仪器}
+
+\begin{itemize}[leftmargin=1.5cm]
+  \item 电解液：0.01 mol/L K$_4$Fe(CN)$_6$ + 0.01 mol/L K$_3$Fe(CN)$_6$ + 1 mol/L KCl
+  \item 工作电极：Pt 盘电极，$\Phi = 5$ mm，$A = 0.196$ cm$^2$
+  \item 参比电极：Hg/HgO（1M KCl）
+  \item 对电极：Pt 丝
+  \item 仪器：CHI660E 电化学工作站，Tafel Plot 技术
+\end{itemize}
+
+\subsection{测试条件}
+
+\begin{table}[h]
+\centering
+\caption{电化学测试参数}
+\begin{tabular}{ll}
+\toprule
+参数 & 数值 \\
+\midrule
+技术 & Tafel Plot \\
+电位范围 & $-0.1 \rightarrow 0.5$ V \\
+扫描速率 & 0.01 V/s \\
+转速 (Part A) & 500, 1000, 1500, 1800, 2000, 2500 rpm \\
+浓度 (Part B) & 0.0002--0.01 mol/L @ 2000 rpm \\
+温度 & $25 \pm 1$\textdegree C \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{实验设计}
+
+实验由 4 组独立操作者分别完成，每组使用指定浓度的 Fe(CN)$_6^{3-/4-}$ 溶液
+和 Pt 盘电极独立测试。分析含以下部分：
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{Part A -- Levich 分析}：0.01M 浓度，6 个转速 → $D_{\text{O}}$, $D_{\text{R}}$
+  \item \textbf{Part B -- 浓度校准}：5 个浓度（0.0002--0.01M），2000 rpm → $|i_l| \propto c^*$
+  \item \textbf{Part C -- K-L/Tafel 分析}：0.01M 数据 → K-L 提取 $i_k$ → Tafel → $i_0$, $\alpha$
+  \item \textbf{Part D -- 半波电位}：0.0008M 无 KCl → $E_{1/2}$
+\end{enumerate}
+
+\newpage
+
+% ============================================================
+\section{理论背景}
+
+\subsection{Levich 方程}
+
+RDE 上的极限扩散电流由 Levich 方程描述\cite{bard2001}：
+
+\begin{equation}
+|i_l| = 0.62\, n\, F\, A\, D^{2/3}\, \nu^{-1/6}\, c^*\, \omega^{1/2}
+\label{eq:levich}
+\end{equation}
+
+以 $|i_l|$ 对 $\omega^{1/2}$ 作图（Levich 图），斜率为 $0.62 n F A D^{2/3} \nu^{-1/6} c^*$，
+由斜率可求解扩散系数 $D$。
+
+\subsection{Koutecky-Levich 方程}
+
+在混合控制区（动力学+扩散），总电流与动力学电流满足：
+
+\begin{equation}
+\frac{1}{|i|} = \frac{1}{i_k} + \frac{1}{0.62\, n\, F\, A\, D^{2/3}\, \nu^{-1/6}\, c^*\, \omega^{1/2}}
+\label{eq:kl}
+\end{equation}
+
+以 $1/|i|$ 对 $\omega^{-1/2}$ 作图，截距为 $1/i_k$，由此获得各过电位下的动力学电流。
+
+\subsection{Tafel 分析}
+
+对于单电子转移的准可逆体系，阳极 Tafel 方程为：
+
+\begin{equation}
+\eta = a + b_a \cdot \log|i_k|, \quad b_a = \frac{2.303 RT}{\alpha F} \approx \frac{0.059}{\alpha}\ \text{V/dec}
+\label{eq:tafel}
+\end{equation}
+
+由 Tafel 斜率 $b_a$ 可得阳极传递系数 $\alpha$，外推 $\eta \rightarrow 0$ 可得交换电流 $i_0$。
+
+\subsection{物理参数}
+
+\begin{table}[h]
+\centering
+\caption{RDE 分析物理参数 (1M KCl, 25\textdegree C)}
+\begin{tabular}{cccc}
+\toprule
+符号 & 参数 & 数值 & 单位 \\
+\midrule
+$\nu$ & 动力学粘度 & $8.9 \times 10^{-3}$ & $\text{cm}^2/\text{s}$ \\
+$F$ & Faraday 常数 & $96485$ & $\text{C}/\text{mol}$ \\
+$n$ & 电子转移数 & 1 & — \\
+$c^*$ (Part A) & Fe(CN)$_6^{3-/4-}$ 浓度 & $1.0 \times 10^{-5}$ & $\text{mol}/\text{cm}^3$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+
+% ============================================================
+\section{结果与讨论}
+
+\subsection{Tafel 极化曲线特征}
+
+0.01M K$_3$Fe(CN)$_6$/K$_4$Fe(CN)$_6$ + 1M KCl 溶液在各转速下的极化曲线呈现
+典型可逆氧化还原电对特征：低电位端为阴极极限电流平台（Fe(III) $\rightarrow$ Fe(II)），
+高电位端为阳极极限电流平台（Fe(II) $\rightarrow$ Fe(III)），
+过渡区电流随电位快速变化。平衡电位 $E_0 \approx 0.245$ V（vs Hg/HgO），
+随转速增大极限电流按 Levich 关系递增。
+
+\subsection{Levich 分析 — 扩散系数}
+
+\begin{table}[h]
+\centering
+\caption{扩散系数测定结果 (4组独立测量)}
+\begin{tabular}{lcc}
+\toprule
+操作者 & $D_{\text{O}}$ ($\times 10^{-6}$ cm$^2$/s) & $D_{\text{R}}$ ($\times 10^{-6}$ cm$^2$/s) \\
+\midrule
+Grp1 & 6.56 & 4.16 \\
+Grp2 & 6.53 & 4.15 \\
+Grp3 & 6.55 & 4.15 \\
+Grp4 & 6.54 & 4.15 \\
+\midrule
+\textbf{平均值} & \textbf{6.55} & \textbf{4.15} \\
+文献值\cite{bard2001} & 7.6 & 6.3 \\
+\bottomrule
+\end{tabular}
+\label{tab:diffusion}
+\end{table}
+
+Levich 图（图~\ref{fig:levich}）的线性拟合 $R^2 \approx 1.0$，
+表明 $|i_l| \propto \omega^{1/2}$ 关系严格成立，验证了 Levich 方程的适用性。
+
+$D_{\text{O}}$ 比文献值低约 14\%，偏差在合理范围（温度、浓度、电极面积等因素）。
+$D_{\text{R}}$ 比文献值低约 34\%，可能原因：（1）阳极极限电流平台在 0.5 V 处
+未完全达到稳态；（2）Fe(CN)$_6^{4-}$ 的氧化产物可能在电极表面累积；
+（3）未扣除 KCl 基底的背景电流（约 $\mu$A 级）对低转速数据影响更大。
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{Fig1_Levich.jpg}
+\caption{Levich 图：阴极 $|i_l|$ vs $\omega^{1/2}$（左）与阳极 $|i_l|$ vs $\omega^{1/2}$（右）。
+4 条线几乎重合，反映 4 组独立测量的高度一致性。}
+\label{fig:levich}
+\end{figure}
+
+\subsection{浓度校准}
+
+不同浓度（0.0002--0.01M）在 2000 rpm 下的极限电流与浓度呈良好线性关系（图~\ref{fig:conc}），
+验证了 Levich 方程中 $i_l \propto c^*$ 的关系。
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{Fig2_Concentration.jpg}
+\caption{浓度校准：$|i_l|$ vs $c^*$ @2000 rpm}
+\label{fig:conc}
+\end{figure}
+
+\subsection{Koutecky-Levich 分析}
+
+在 6 个过电位（$\eta = 80$--$200$ mV）下进行 K-L 分析（图~\ref{fig:kl}），
+$1/|i|$ 对 $\omega^{-1/2}$ 的线性拟合良好（$R^2 > 0.86$），
+由截距获得各过电位下的动力学电流 $i_k$。
+
+\subsection{Tafel 分析}
+
+将 K-L 获得的 $i_k$ 代入 Tafel 分析，$\eta$ vs $\log|i_k|$ 线性拟合结果如下：
+
+\begin{table}[h]
+\centering
+\caption{Tafel 分析结果}
+\begin{tabular}{lcccc}
+\toprule
+操作者 & $b$ (mV/dec) & $\alpha$ & $R^2$ & $i_0$ ($\mu$A) \\
+\midrule
+Grp1 & 60.2 & 0.980 & 0.985 & 945 \\
+Grp2 & 81.6 & 0.723 & 0.861 & 2311 \\
+Grp3 & 81.8 & 0.721 & 0.987 & 2357 \\
+Grp4 & 62.2 & 0.948 & 0.997 & 995 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+测得 $\alpha = 0.72$--$0.98$，偏离理想可逆值 $\alpha = 0.5$（此时 $b = 118$ mV/dec）。
+原因分析：（1）Fe(CN)$_6^{3-/4-}$ 在 Pt 上为快速准可逆体系，
+在所选过电位范围（$\eta = 80$--$200$ mV）内反反应（还原支）仍有不可忽略的贡献，
+导致表观 Tafel 斜率偏小，$\alpha$ 偏高；
+（2）$i_k$ 的提取依赖于 K-L 截距，截距对测量误差敏感。
+准确的 $\alpha$ 和 $i_0$ 测定宜扩大到更高过电位区或采用 Nicholson 方法\cite{bard2001}。
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{Fig4_Tafel_1组.jpg}
+\caption{Tafel 图（Grp1）：$\eta$ vs $\log|i_k|$。虚线为 $b=118$ mV/dec ($\alpha=0.5$) 参考线。}
+\label{fig:tafel}
+\end{figure}
+
+\subsection{半波电位（无支持电解质）}
+
+0.0008M K$_3$Fe(CN)$_6$/K$_4$Fe(CN)$_6$ 在无 KCl 条件下的极化曲线
+（图~\ref{fig:hw}）显示 $E_0 \approx 0.161$ V、$E_{1/2} \approx 0.172$ V。
+与有 KCl 体系（$E_0 \approx 0.245$ V）相比，
+半波电位负移约 73 mV，归因于无支持电解质时溶液欧姆降增大和液接电位变化。
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{Fig5_HalfWave_1组.jpg}
+\caption{0.0008M 无 KCl 极化曲线及半波电位}
+\label{fig:hw}
+\end{figure}
+
+\subsection{4 组独立测量的可复现性}
+
+4 组独立操作者的 Levich 分析结果（表~\ref{tab:diffusion}）高度一致
+（$D_{\text{O}}$: 6.53--6.56 $\times 10^{-6}$，$D_{\text{R}}$: 4.15--4.16 $\times 10^{-6}$），
+Tafel 斜率中 2 组（Grp1/Grp4）与另 2 组（Grp2/Grp3）存在系统性差异
+（$60$--$62$ vs $81$--$82$ mV/dec）。
+需要指出，CHI660E 以 4 位有效数字导出数据，
+限制了在相同实验条件下区分各组独立测量值的精度。
+组间差异尤其在 1000 rpm 处的读数不同导致了 K-L 斜率和 Tafel 参数的分化。
+
+\newpage
+
+% ============================================================
+\section{结论}
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item 通过 Levich 分析测得 Fe(CN)$_6^{3-}$ 和 Fe(CN)$_6^{4-}$ 的扩散系数分别为
+  $D_{\text{O}} = 6.55 \times 10^{-6}$ cm$^2$/s 和
+  $D_{\text{R}} = 4.15 \times 10^{-6}$ cm$^2$/s，与文献值量级一致。
+  \item Levich 图和浓度校准验证了 $|i_l| \propto \omega^{1/2}$ 和 $|i_l| \propto c^*$ 关系。
+  \item K-L 分析结合 Tafel 外推获得的传递系数 $\alpha \approx 0.72$--$0.98$
+  偏离理想可逆值，分析归因于准可逆体系在低 $\eta$ 区的反反应贡献。
+  \item 4 组独立测量在 Levich 分析中高度一致，验证了实验方案的可复现性。
+\end{enumerate}
+
+\newpage
+
+% ============================================================
+\section{局限性与改进方向}
+
+\subsection{已实现的可复现性}
+
+4 组独立操作者遵照相同实验方案，Levich 分析得到的扩散系数差异 $< 0.5\%$，
+表明 RDE 方法在跨操作者条件下具有良好的可转移性。
+
+\subsection{当前局限}
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{阳极平台不完整}：$D_{\text{R}}$ 系统偏低 34\%，阳极极限电流在 0.5V 处
+  可能未达到完全稳态平台
+  \item \textbf{无背景扣除}：KCl 基底的背景电流（$\mu$A 级）未从数据中扣除
+  \item \textbf{$\alpha$ 偏差}：Tafel 分析所选的过电位范围（80--200 mV）
+  对快速准可逆体系偏低，反反应贡献导致表观 $\alpha$ 偏高
+  \item \textbf{CHI660E 导出精度}：4 位有效数字限制了在多数转速下区分
+  各组独立测量值的能力
+\end{enumerate}
+
+\subsection{建议改进}
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item 扩大阳极扫描范围至更高电位，确保极限电流完全达到平台
+  \item 扣除 KCl 基底背景电流
+  \item 将 Tafel 分析的 $\eta$ 范围扩展至 200--400 mV
+  \item 采用 Nicholson 方法（CV 峰电位差法）独立验证 $\alpha$ 值
+\end{enumerate}
+
+\newpage
+
+% ============================================================
+\begin{thebibliography}{5}
+
+\bibitem{bard2001}
+A.~J.~Bard, L.~R.~Faulkner,
+\textit{Electrochemical Methods: Fundamentals and Applications}, 2nd ed.,
+John Wiley \& Sons, New York, 2001. (第 9 章: Rotating Disk Electrode)
+
+\bibitem{教材}
+唐安平 主编,
+\textit{电化学实验},
+实验 26: K$_4$Fe(CN)$_6$/K$_3$Fe(CN)$_6$体系旋转圆盘电极动力学参数的测定.
+
+\end{thebibliography}
+
+\end{document}

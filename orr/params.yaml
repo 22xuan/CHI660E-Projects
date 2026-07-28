@@ -1,0 +1,87 @@
+# ============================================================
+# ORR RDE 实验参数配置
+# 仪器: CHI660E 电化学工作站 | 技术: 线性扫描伏安法 (LSV)
+# 参比电极: Hg/HgO (0.1M KOH) | 对电极: Pt 丝
+# ============================================================
+
+# --- 电极参数 ---
+electrode:
+  material: "304不锈钢 / 316不锈钢"
+  diameter_cm: 0.5
+  area_cm2: 0.19635        # π × (0.25)²
+  area_for_j: 0.196         # 工程近似值
+  substrate: "304SS (1/2组), 316SS (3/4组)"
+  connection: "AB胶 (环氧树脂)"
+  contact_resistance_ohm: [50, 150]  # 估计接触电阻 (含AB胶+SS钝化膜)
+
+# --- 电解液参数 (0.1M KOH, 25°C) ---
+electrolyte:
+  solution: "0.1 M KOH"
+  pH: 13.0
+  viscosity_cm2_per_s: 1.009e-2     # ν, 动力学粘度
+  o2_diffusion_cm2_per_s: 1.9e-5    # D₀, O₂ 扩散系数
+  o2_conc_mol_per_cm3: 1.2e-6       # C₀, O₂ 饱和溶解浓度
+  faraday_constant: 96485            # F (C/mol)
+  temperature_c: 25
+
+# --- 参比电极电位转换 ---
+reference_electrode:
+  type: "Hg/HgO"
+  e0_vs_she: 0.098          # E°(Hg/HgO) vs SHE
+  conversion_to_rhe: 0.866  # E_RHE = E_Hg/HgO + 0.098 + 0.0591×13
+
+# --- LSV 扫描参数 ---
+lsv:
+  init_e_v: 0.3
+  final_e_v: -0.9
+  scan_rate_v_per_s: 0.01
+  sample_interval_v: 0.001
+  quiet_time_s: 2
+  sensitivity_a_per_v: 1.0e-6
+  # 分析区间 (参数化)
+  baseline_range: [0.2, 0.3]          # 基线电流区域 (V vs Hg/HgO)
+  limiting_range: [-0.9, -0.75]       # 极限电流区域 (V vs Hg/HgO)
+  tafel_range: [-0.35, -0.1]          # Tafel 拟合区域 (V vs Hg/HgO)
+  half_wave_search_range: [-0.9, 0.2] # E_1/2 搜索区间
+
+# --- K-L 分析配置 ---
+kl_analysis:
+  potentials_vs_hghgo: [-0.30, -0.35, -0.40, -0.45, -0.50]
+  rotation_speeds_rpm: [1000, 1200, 1600, 2000, 2500, 3000]
+  n_theoretical_2e: 2.0
+  n_theoretical_4e: 4.0
+
+# --- 参数提取阈值 ---
+thresholds:
+  onset_j_ma_per_cm2: -0.05    # E_onset: 电流密度超过此值(负值)的电位
+
+# --- 催化剂分组 ---
+# 注：4 组独立操作者分别完成，每组使用指定催化剂和不锈钢电极独立制备与测试
+catalysts:
+  1组: "Co₃O₄/C (304SS, Op.A1)"
+  2组: "20% Pt/C (304SS, Op.A2)"
+  3组: "Co₃O₄/C (316SS, Op.B1)"
+  4组: "20% Pt/C (316SS, Op.B2)"
+
+# --- 平行样合并 ---
+merge:
+  enabled: true
+  pairs:
+    Co3O4/C: ["1组", "3组"]
+    Pt/C: ["2组", "4组"]
+
+# --- 数据路径配置 ---
+data:
+  source_root: "data"                 # 项目内相对路径
+  groups: ["1组", "2组", "3组", "4组"]
+  special_paths:
+    1组:
+      1000: "1/1000r-1.TXT"
+
+# --- 输出配置 ---
+output:
+  root: "output"
+  processed_dir: "output/processed"
+  tables_dir: "output/tables"
+  figures_dir: "output/figures"
+  origin_input_dir: "output/origin_input"

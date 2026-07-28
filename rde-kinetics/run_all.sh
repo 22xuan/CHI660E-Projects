@@ -1,0 +1,54 @@
+#!/bin/bash
+set -e
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+
+echo "========================================="
+echo " RDE 动力学参数测定 — 全流程分析"
+echo "========================================="
+
+echo "[1/5] 数据解析..."
+python3 scripts/parse_chi660e.py
+echo "[2/5] Levich 分析 (扩散系数)..."
+python3 scripts/levich_analysis.py
+echo "[3/5] K-L/Tafel 分析 (动力学参数)..."
+python3 scripts/kl_analysis.py
+echo "[4/5] 图表生成..."
+python3 scripts/generate_figures.py
+
+# LaTeX 编译
+if command -v xelatex &> /dev/null && [ -f report/RDE_Kinetics_Report.tex ]; then
+    echo "-----------------------------------------"
+    echo " 编译 LaTeX 报告..."
+    TMPDIR=$(mktemp -d)
+    cp report/RDE_Kinetics_Report.tex "$TMPDIR/"
+    python3 -c "
+from PIL import Image
+import os
+src = 'output/figures'
+dst = '$TMPDIR'
+figs = ['Fig1_Levich.png', 'Fig2_Concentration.png', 'Fig4_Tafel_1组.png', 'Fig5_HalfWave_1组.png']
+for f in figs:
+    fpath = os.path.join(src, f)
+    if os.path.exists(fpath):
+        img = Image.open(fpath)
+        if img.mode == 'RGBA': img = img.convert('RGB')
+        out = os.path.join(dst, f.replace('.png', '.jpg'))
+        img.save(out, 'JPEG', quality=95)
+"
+    cd "$TMPDIR"
+    LOGFILE="$TMPDIR/xelatex.log"
+    xelatex -interaction=nonstopmode RDE_Kinetics_Report.tex > "$LOGFILE" 2>&1
+    xelatex -interaction=nonstopmode RDE_Kinetics_Report.tex >> "$LOGFILE" 2>&1
+    if [ -f RDE_Kinetics_Report.pdf ]; then
+        cp RDE_Kinetics_Report.pdf "$SCRIPT_DIR"/report/
+        cd "$SCRIPT_DIR"
+        echo "  编译成功: $(ls -lh report/RDE_Kinetics_Report.pdf | awk '{print $5}')"
+    else
+        echo "  错误: LaTeX 编译失败!"; tail -30 "$LOGFILE"; exit 1
+    fi
+    rm -rf "$TMPDIR"
+fi
+
+echo "[5/5] 完成"
+echo "========================================="
