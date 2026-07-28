@@ -21,11 +21,41 @@ OUTPUT_DIR = PROJECT_DIR / CFG["output"]["figures_dir"]
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 TABLES_DIR = PROJECT_DIR / CFG["output"]["tables_dir"]
 COLORS = ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#A65628"]
-groups = CFG["data"]["groups"]; GLABEL = {g: f"Grp{i+1}" for i, g in enumerate(groups)}
+groups = CFG["data"]["groups"]
+GLABEL = {g: f"Grp{i + 1}" for i, g in enumerate(groups)}
 
 plt.rcParams.update(
     {"font.size": 11, "figure.dpi": 150, "savefig.dpi": 150, "savefig.bbox": "tight"}
 )
+
+
+def fig0_polarization() -> None:
+    all_df = pd.read_csv(PROJECT_DIR / CFG["output"]["processed_dir"] / "all_data.csv")
+    groups = CFG["data"]["groups"]
+    speeds = CFG["rotation_speeds_rpm"]
+    cat_lo, cat_hi = CFG["limiting_current"]["cathode_range"]
+    ano_lo, ano_hi = CFG["limiting_current"]["anode_range"]
+
+    for g in groups:
+        fig, ax = plt.subplots(figsize=(8, 5.5))
+        for i, rpm in enumerate(speeds):
+            key = f"PartA_{g}_{rpm}rpm"
+            mask = all_df["key"] == key
+            df = all_df[mask]
+            if len(df) == 0:
+                continue
+            ax.plot(df["potential_v"], df["current_a"], color=COLORS[i], lw=1.2, label=f"{rpm} rpm")
+        ax.axvspan(cat_lo, cat_hi, color="blue", alpha=0.08, label="Cathodic i_l range")
+        ax.axvspan(ano_lo, ano_hi, color="red", alpha=0.08, label="Anodic i_l range")
+        ax.set_title(f"Op.{GLABEL[g]} — Tafel Plot Polarization Curves (0.01M)")
+        ax.set_xlabel("Potential (V)")
+        ax.set_ylabel("Current (A)")
+        ax.legend(fontsize=8)
+        ax.grid(True, alpha=0.3)
+        plt.tight_layout()
+        fig.savefig(str(OUTPUT_DIR / f"Fig0_Polarization_{g}.png"))
+        plt.close()
+        print(f"  Fig0_Polarization_{g}.png")
 
 
 def fig1_levich() -> None:
@@ -182,7 +212,18 @@ def fig4_tafel() -> None:
         # 参考线 a=0.5
         x_ref = np.linspace(g_raw["log_ik"].min(), g_raw["log_ik"].max(), 50)
         ax.plot(
-            x_ref, 2.303 * 8.314 * (CFG["electrolyte"]["temperature_c"] + 273.15) / (0.5 * CFG["electrolyte"]["faraday_constant"]) * 1000 * x_ref, "gray", lw=1, alpha=0.5, ls=":", label=f"alpha=0.5 reference"
+            x_ref,
+            2.303
+            * 8.314
+            * (CFG["electrolyte"]["temperature_c"] + 273.15)
+            / (0.5 * CFG["electrolyte"]["faraday_constant"])
+            * 1000
+            * x_ref,
+            "gray",
+            lw=1,
+            alpha=0.5,
+            ls=":",
+            label=f"alpha=0.5 reference",
         )
 
         ax.set_title(f"Op.{GLABEL[g]} — Tafel Plot")
@@ -237,6 +278,7 @@ def main() -> None:
     print("=" * 40)
     print("生成图表")
     print("=" * 40)
+    fig0_polarization()
     fig1_levich()
     fig2_concentration()
     fig3_kl()

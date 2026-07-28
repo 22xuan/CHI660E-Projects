@@ -8,7 +8,6 @@ from typing import Dict, Any, List, Tuple
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = SCRIPT_DIR.parent
 
-import yaml
 from common import load_params
 
 
