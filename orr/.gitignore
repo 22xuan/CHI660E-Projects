@@ -1,22 +1,22 @@
-# 生成文件
+# Generated files / 生成文件
 output/processed/
 output/figures/
 output/tables/
 output/origin_input/
 output/*.pkl
 
-# 数据（对外不可见）
+# Data symlink / 数据软链接
 data
 data/
 
-# Python
+# Python cache / Python缓存
 __pycache__/
 *.pyc
 *.pyo
 *.egg-info/
 .pytest_cache/
 
-# LaTeX 临时文件
+# LaTeX temp files / LaTeX临时文件
 *.aux
 *.log
 *.out
@@ -25,6 +25,5 @@ __pycache__/
 *.fls
 *.fdb_latexmk
 
-# 系统
+# OS files / 系统文件
 .DS_Store
-report/*.pdf

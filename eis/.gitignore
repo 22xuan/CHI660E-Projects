@@ -1,6 +1,11 @@
+# Generated files / 生成文件
 output/processed/
 output/figures/
 output/tables/
+
+# Data symlink / 数据软链接
 data/
+
+# Python cache / Python缓存
 __pycache__/
 *.pyc
