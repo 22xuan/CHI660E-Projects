@@ -21,7 +21,7 @@
 ## 项目结构
 
 ```
-CHI660E-RDE-Kinetics/
+rde-kinetics/
 ├── params.yaml
 ├── run_all.sh
 ├── scripts/

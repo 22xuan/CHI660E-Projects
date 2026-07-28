@@ -17,7 +17,7 @@
 ## 项目结构
 
 ```
-CHI660E-ORR/
+orr/
 ├── .gitignore
 ├── README.md
 ├── run_all.sh                # 一键全流程脚本
