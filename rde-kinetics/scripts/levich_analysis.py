@@ -80,17 +80,18 @@ def compute_diffusion_coefficient(
     omega_sqrt_values: List[float],
     params: Dict[str, Any],
     n: int | None = None,
-) -> Tuple[float, float, float]:
-    """从 Levich 斜率计算扩散系数 D"""
+) -> Tuple[float, float, float, float]:
+    """从 Levich 斜率计算扩散系数 D, 返回 (D, R², slope, D_95CI_half)"""
     if n is None:
         n = params["levich"]["n_electrons"]
     if len(i_l_values) < 3:
-        return np.nan, np.nan, np.nan
+        return np.nan, np.nan, np.nan, np.nan
 
     x = np.array(omega_sqrt_values)
     y = np.array(i_l_values)
 
-    slope, intercept, r_value, _, _ = stats.linregress(x, y)
+    slope, intercept, r_value, _, std_err = stats.linregress(x, y)
+    dof = len(x) - 2
 
     F = params["electrolyte"]["faraday_constant"]
     nu = params["electrolyte"]["viscosity_cm2_per_s"]
@@ -101,7 +102,13 @@ def compute_diffusion_coefficient(
     coeff = 0.62 * n * F * A * nu ** (-1 / 6) * c_star
     D = (abs(slope) / coeff) ** (3 / 2)
 
-    return D, float(r_value) ** 2, float(slope)
+    # 95% CI: D_CI = (3/2) * D / slope * std_err * t_0.025(dof)
+    from scipy.stats import t as t_dist
+
+    t_val = t_dist.ppf(0.975, dof) if dof > 0 else 2.78
+    D_ci_half = (3 / 2) * D / abs(slope) * std_err * t_val if slope != 0 and std_err > 0 else 0.0
+
+    return float(D), float(r_value) ** 2, float(slope), float(D_ci_half)
 
 
 def main() -> None:
@@ -124,7 +131,7 @@ def main() -> None:
     for g in groups:
         gdf = lc_df[lc_df["group"] == g].dropna(subset=["abs_i_cathode_A"])
         if len(gdf) >= 3:
-            D, r2, slope = compute_diffusion_coefficient(
+            D, r2, slope, ci = compute_diffusion_coefficient(
                 gdf["abs_i_cathode_A"].tolist(),
                 gdf["omega_sqrt"].tolist(),
                 params,
@@ -132,18 +139,18 @@ def main() -> None:
             if np.isnan(D):
                 print(f"  [警告] {g} 阴极拟合失败, R2={r2:.4f}")
                 continue
-            print(f"  {g}: D_O = {D:.3e} cm²/s, R² = {r2:.4f}")
+            print(f"  {g}: D_O = {D:.3e}±{ci:.2e} cm²/s, R² = {r2:.4f}")
 
     print("\n阳极扩散系数 D_R (Fe(CN)₆⁴⁻):")
     for g in groups:
         gdf = lc_df[lc_df["group"] == g].dropna(subset=["abs_i_anode_A"])
         if len(gdf) >= 3:
-            D, r2, slope = compute_diffusion_coefficient(
+            D, r2, slope, ci = compute_diffusion_coefficient(
                 gdf["abs_i_anode_A"].tolist(),
                 gdf["omega_sqrt"].tolist(),
                 params,
             )
-            print(f"  {g}: D_R = {D:.3e} cm²/s, R² = {r2:.4f}")
+            print(f"  {g}: D_R = {D:.3e}±{ci:.2e} cm²/s, R² = {r2:.4f}")
 
     # Baseline-corrected / 基线校正后
     print("\n--- 基线校正后 ---")
@@ -151,24 +158,24 @@ def main() -> None:
     for g in groups:
         gdf = lc_df[lc_df["group"] == g].dropna(subset=["abs_i_cathode_bl_A"])
         if len(gdf) >= 3:
-            D, r2, _ = compute_diffusion_coefficient(
+            D, r2, slope, ci = compute_diffusion_coefficient(
                 gdf["abs_i_cathode_bl_A"].tolist(), gdf["omega_sqrt"].tolist(), params
             )
             if not np.isnan(D):
                 print(
-                    f"  {g}: D_O = {D:.3e} cm²/s (校正前 {lc_df[lc_df['group'] == g]['abs_i_cathode_A'].mean():.4e} A)"
+                    f"  {g}: D_O = {D:.3e}±{ci:.2e} cm²/s (校正前 {lc_df[lc_df['group'] == g]['abs_i_cathode_A'].mean():.4e} A)"
                 )
 
     print("阳极扩散系数 D_R (基线校正):")
     for g in groups:
         gdf = lc_df[lc_df["group"] == g].dropna(subset=["abs_i_anode_bl_A"])
         if len(gdf) >= 3:
-            D, r2, _ = compute_diffusion_coefficient(
+            D, r2, slope, ci = compute_diffusion_coefficient(
                 gdf["abs_i_anode_bl_A"].tolist(), gdf["omega_sqrt"].tolist(), params
             )
             if not np.isnan(D):
                 print(
-                    f"  {g}: D_R = {D:.3e} cm²/s (校正前 {lc_df[lc_df['group'] == g]['abs_i_anode_A'].mean():.4e} A)"
+                    f"  {g}: D_R = {D:.3e}±{ci:.2e} cm²/s (校正前 {lc_df[lc_df['group'] == g]['abs_i_anode_A'].mean():.4e} A)"
                 )
     print(f"\n文献参考值:")
     print(f"  D_O = {params['levich']['D_O_literature_cm2_per_s']:.1e} cm²/s")

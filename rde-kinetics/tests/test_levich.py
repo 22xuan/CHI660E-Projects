@@ -30,7 +30,7 @@ def test_levich_fit():
 
     with open(Path(__file__).resolve().parent.parent / "params.yaml") as f:
         params = yaml.safe_load(f)
-    D, r2, slope = compute_diffusion_coefficient(i_l.tolist(), omega_sqrt.tolist(), params)
+    D, r2, slope, ci = compute_diffusion_coefficient(i_l.tolist(), omega_sqrt.tolist(), params)
     assert abs(D - D_true) / D_true < 0.02
     assert r2 > 0.999
     print(f"  [PASS] Levich拟合: D={D:.2e} (期望 {D_true:.2e})")
