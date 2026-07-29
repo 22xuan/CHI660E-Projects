@@ -30,16 +30,24 @@ def fig1_nyquist() -> None:
     fig, ax = plt.subplots(figsize=(7, 6))
     for idx, cond in enumerate(CONDS):
         df = pd.read_csv(PROJECT_DIR / CFG["output"]["processed_dir"] / f"eis_{cond['label']}.csv")
+        # Filter: Zre > 0, Zim > -100 (remove high-freq inductive artifacts)
+        ok = (df["Zre_ohm_cm2"] > 0) & (df["Zim_ohm_cm2"] > -100)
+        d = df[ok]
         ax.plot(
-            df["Zre_ohm_cm2"],
-            -df["Zim_ohm_cm2"],
+            d["Zre_ohm_cm2"],
+            -d["Zim_ohm_cm2"],
             "-",
             color=COLORS[idx],
             lw=1.2,
             label=f"pH {cond['pH']}",
         )
 
-        rs = df["Zre_ohm_cm2"].iloc[:10].min()
+        # Rs: Zre where |Zim| is minimum in high-freq range
+        high = d[d["freq_Hz"] > 1000]
+        if len(high) > 0:
+            rs = high.loc[high["Zim_ohm_cm2"].abs().idxmin(), "Zre_ohm_cm2"]
+        else:
+            rs = d["Zre_ohm_cm2"].iloc[:10].min()
         ax.annotate(
             f"Rs={rs:.1f}",
             xy=(rs, 0),
