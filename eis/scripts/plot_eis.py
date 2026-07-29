@@ -30,15 +30,22 @@ def fig1_nyquist() -> None:
     fig, ax = plt.subplots(figsize=(7, 6))
     for idx, cond in enumerate(CONDS):
         df = pd.read_csv(PROJECT_DIR / CFG["output"]["processed_dir"] / f"eis_{cond['label']}.csv")
-        # Filter: Zre > 0, Zim > -100 (remove high-freq inductive artifacts)
+        # Filter noise: Zre > 0, Zim > -100
         ok = (df["Zre_ohm_cm2"] > 0) & (df["Zim_ohm_cm2"] > -100)
-        d = df[ok]
+        d = df[ok].copy()
+        # Log downsample to ~200 pts for clean Nyquist curve
+        if len(d) > 200:
+            logf = np.log10(d["freq_Hz"].values)
+            bins = np.linspace(logf.min(), logf.max(), 200)
+            idxs = sorted(set(np.argmin(np.abs(logf - b)) for b in bins))
+            d = d.iloc[idxs]
         ax.plot(
             d["Zre_ohm_cm2"],
             -d["Zim_ohm_cm2"],
-            "-",
+            ".-",
             color=COLORS[idx],
-            lw=1.2,
+            ms=2,
+            lw=1.0,
             label=f"pH {cond['pH']}",
         )
 
