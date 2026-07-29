@@ -56,6 +56,20 @@ def parse_mpt(filepath: str, area_cm2: float = 1.0) -> pd.DataFrame:
     df = pd.DataFrame(
         rows, columns=["freq_Hz", "Zre_ohm_cm2", "Zim_ohm_cm2", "Zmod_ohm_cm2", "Phase_deg"]
     )
+    # Aggregate: round frequency to 1Hz then group by median (SP-200 repeats each freq ~700x)
+    df["freq_group"] = df["freq_Hz"].round(0)
+    df = (
+        df.groupby("freq_group", as_index=False)
+        .agg(
+            {
+                "Zre_ohm_cm2": "median",
+                "Zim_ohm_cm2": "median",
+                "Zmod_ohm_cm2": "median",
+                "Phase_deg": "median",
+            }
+        )
+        .rename(columns={"freq_group": "freq_Hz"})
+    )
     return df.sort_values("freq_Hz", ascending=False)
 
 

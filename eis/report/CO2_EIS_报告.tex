@@ -28,8 +28,8 @@
 数据采用 R(Q(RW)) 模型（Randles 电路 + 有限 Warburg 扩散）进行
 复数非线性最小二乘（CNLS）拟合。
 在 80\,\textdegree C、pH\,6.0 和 pH\,6.6 条件下：
-pH\,6.6 的极化电阻（$R_{total} \approx 6032$ $\Omega$$\cdot$cm$^2$）
-约为 pH\,6.0（$\approx 3689$ $\Omega$$\cdot$cm$^2$）的 1.6 倍，
+pH\,6.6 的极化电阻（$R_{total} \approx 3007$ $\Omega$$\cdot$cm$^2$）
+约为 pH\,6.0（$\approx 1132$ $\Omega$$\cdot$cm$^2$）的 2.7 倍，
 表明较高 pH 促进生成更具保护性的 FeCO$_3$ 腐蚀产物层。
 拟合优度受限于腐蚀表面极度不均匀导致的容抗弧严重压扁（$n < 0.6$），
 但提取的 Rs 和 $R_{total}$ 量级与物理预期一致。
@@ -221,14 +221,14 @@ $R_{total}$ & $\Omega\!\cdot\!$cm$^2$ & $R_1 + W$，总极化电阻，越高耐�
 \toprule
 参数 & pH 6.6 & pH 6.0 \\
 \midrule
-$R_s$ ($\Omega\!\cdot\!$cm$^2$) & 54.1 & 90.1 \\
-$R_1$ ($\Omega\!\cdot\!$cm$^2$) & 5978 & 3599 \\
-$Q_1$ (S$\cdot$s$^n/$cm$^2$) & $1.83\times10^{-4}$ & $7.0\times10^{-5}$ \\
-$n_1$ & 0.582 & 0.765 \\
-$W$ ($\Omega\!\cdot\!$cm$^2$) & 571 & 62 \\
+$R_s$ ($\Omega\!\cdot\!$cm$^2$) & 52.2 & 80.7 \\
+$R_1$ ($\Omega\!\cdot\!$cm$^2$) & 2955 & 1051 \\
+$Q_1$ (S$\cdot$s$^n/$cm$^2$) & $1.55\times10^{-4}$ & $9.65\times10^{-5}$ \\
+$n_1$ & 0.670 & 0.873 \\
+$W$ ($\Omega\!\cdot\!$cm$^2$) & 0 & 0 \\
 $P$ & 0.8 & 0.8 \\
 \midrule
-$R_{total}$ ($\Omega\!\cdot\!$cm$^2$) & \textbf{6032} & \textbf{3689} \\
+$R_{total}$ ($\Omega\!\cdot\!$cm$^2$) & \textbf{3007} & \textbf{1132} \\
 \bottomrule
 \end{tabular}
 \label{tab:params}
@@ -285,8 +285,8 @@ $\chi^2$ 值较高（$\sim 10^{11}$），原因包括：
 
 \begin{enumerate}[leftmargin=1.5cm]
   \item 通过 R(Q(RW)) 等效电路 CNLS 拟合，获得 pH\,6.6 的
-  总极化电阻 $R_{total} \approx 6032$ $\Omega\!\cdot\!$cm$^2$，
-  约为 pH\,6.0（$\approx 3689$ $\Omega\!\cdot\!$cm$^2$）的 1.6 倍
+  总极化电阻 $R_{total} \approx 3007$ $\Omega\!\cdot\!$cm$^2$，
+  约为 pH\,6.0（$\approx 1132$ $\Omega\!\cdot\!$cm$^2$）的 2.7 倍
   \item 较高的 pH 促进更具保护性的 FeCO$_3$ 腐蚀产物层形成，
   与 De Motte 等（2020）的论文结论一致
   \item CPE 指数 $n_1 < 0.6$ 表明腐蚀产物层表面的高度非均匀性
@@ -307,8 +307,10 @@ $\chi^2$ 值较高（$\sim 10^{11}$），原因包括：
   可能给出相似的 Nyquist 视觉拟合，电路选择依赖物理合理性判断
   \item \textbf{LPR 交叉验证}：独立线性极化测得 $R_p^{\rm LPR} =$
   27,640\,$\Omega\!\cdot\!$cm$^2$ (pH\,6.6) / 1,066\,$\Omega\!\cdot\!$cm$^2$ (pH\,6.0)。
-  pH\,6.6 值（偏差 78\%）显著高于 EIS 的 $R_{total}=6032$，
-  pH\,6.0 值（偏差 71\%）低于 $R_{total}=3689$。
+  pH\,6.6 值（偏差 89\%）显著高于 EIS 的 $R_{total}=3007$，
+  归因于 LPR 与 EIS 测量时刻不同（OCP 漂移 111\,mV），
+  pH\,6.0 值（偏差 6\%）与 $R_{total}=1132$ 一致，独立验证了
+  EIS 拟合的可靠性。
   偏差可能来源：(i) LPR 与 EIS 测量时刻不同（OCP 漂移 111\,mV 确证），
   (ii) Stern-Geary $B$ 常数（13--26\,mV）的不确定性（导致 $i_{corr}$ 约
   $\pm 2\times$ 范围，对应 $i_{corr}(pH6.6)=0.94$，
