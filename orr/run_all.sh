@@ -48,7 +48,14 @@ if command -v xelatex &> /dev/null; then
 
     # 复制 PDF 矢量图到编译目录
     cp output/figures/Fig*.pdf "$TMPDIR/" 2>/dev/null
-    echo "  PDF 矢量图已复制 (OriginPro script available at orr/scripts/origin_plot_orr.py)"
+    echo "  PDF 矢量图已复制"
+
+    # Windows OriginPro 出图
+    if command -v powershell.exe &> /dev/null; then
+        powershell.exe -Command "D:\Anaconda\python.exe D:\26214\employment\CHI660E-Projects\orr\scripts\origin_plot_orr.py" 2>&1
+        cp output/figures/*.pdf "$TMPDIR/" 2>/dev/null
+        echo "  OriginPro 图已更新"
+    fi
 
     # 两次编译 (TOC + 交叉引用)，在临时目录内执行
 

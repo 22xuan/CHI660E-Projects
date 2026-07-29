@@ -236,7 +236,10 @@ def main():
     print("OriginPro ORR-RDE 批量出图")
     print("=" * 60)
 
-    op.set_show(False)
+    try:
+        op.set_show(False)
+    except:
+        pass
 
     print("\n[Fig 1] LSV 曲线叠加图...")
     for group in GROUPS:
