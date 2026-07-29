@@ -193,5 +193,5 @@ Tafel 斜率约 108 mV/dec，接近 120 mV/dec，暗示第一步电子转移（O
 
 ---
 
-*分析工具: Python (NumPy, SciPy, Pandas, Matplotlib) + OriginPro*
+*分析工具: Python (NumPy, SciPy, Pandas, Matplotlib) + originpro*
 *报告生成: LaTeX (XeLaTeX) 编译*

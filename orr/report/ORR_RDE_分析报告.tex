@@ -35,7 +35,7 @@
 \vspace{1cm}
 \textbf{仪器：} CHI660E 电化学工作站 \quad
 \textbf{技术：} 线性扫描伏安法 (LSV) \\
-\textbf{分析工具：} Python (NumPy, SciPy, Pandas, Matplotlib) + OriginPro (Windows 可选) \\
+\textbf{分析工具：} Python (NumPy, SciPy, Pandas, Matplotlib) \quad \textbf{辅助：} OriginPro（Windows） \\
 \textbf{工作电极基底：} 304不锈钢 / 316不锈钢（AB胶连接）
 \end{center}
 
@@ -274,7 +274,7 @@ AB 胶非导电性导致额外接触电阻，估计总 $R_u$ 为 50--150 $\Omega
   获得 Tafel 斜率 $b$
   \item \textbf{催化剂汇总}：按催化剂类型汇总 4 组独立测量结果。
   1200--3000 rpm 处各组读数一致（仪器精度内），跨操作者差异仅见于 1000 rpm
-  \item \textbf{图表输出}：Matplotlib 生成 PDF 矢量图，OriginPro 生成 EMF 矢量图（Windows 可选）
+  \item \textbf{图表输出}：Matplotlib 生成 PDF 矢量图，OriginPro 生成 EMF 矢量图（Windows）
 \end{enumerate}
 
 \subsection{关键参数定义}
@@ -633,7 +633,7 @@ DOI: \href{https://doi.org/10.1016/j.electacta.2017.09.145}{10.1016/j.electacta.
 3. K-L/Tafel & \texttt{kl\_analysis.py} & \texttt{all\_data.csv} & \texttt{kl\_analysis.csv} \\
 4. 汇总 & \texttt{generate\_tables.py} & 各CSV & \texttt{group\_comparison.csv} \\
 5. 图表 & \texttt{generate\_figures.py} & \texttt{all\_data.csv} & PDF 矢量图 \\
-6. OriginPro & \texttt{origin\_plot\_orr.py} & \texttt{origin\_input/} & 矢量图（Windows 可选） \\
+6. OriginPro（可选） & \texttt{origin\_plot\_orr.py} & \texttt{origin\_input/} & EMF 图 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -654,7 +654,7 @@ DOI: \href{https://doi.org/10.1016/j.electacta.2017.09.145}{10.1016/j.electacta.
   \item \textbf{多格式兼容}：自动检测逗号/制表符分隔符，适配 CHI660E 导出格式
   \item \textbf{单元测试}：\texttt{tests/} 目录包含电位转换、电流密度转换、
   K-L 拟合和 Levich 常数计算的自动化测试
-  \item \textbf{图形双轨输出}：Matplotlib（默认 PDF 矢量）+ OriginPro（Windows EMF 可选），两套工具互补
+  \item \textbf{图形双轨输出}：Matplotlib 生成 PDF 矢量图（默认），OriginPro 生成 EMF 矢量图（Windows 辅助）
   \item \textbf{LaTeX 工作流}：Python 数据处理 $\rightarrow$ LaTeX 编译
   $\rightarrow$ PDF 报告一键生成，编译日志完整保留
 \end{enumerate}

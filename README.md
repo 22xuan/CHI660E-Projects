@@ -58,7 +58,7 @@ cd eis/ && bash run_all.sh             # EIS 全流程
 
 ## 技术栈
 
-Python (NumPy, SciPy, Pandas, Matplotlib, PyYAML) + OriginPro + LaTeX
+Python (NumPy, SciPy, Pandas, Matplotlib, PyYAML) + OriginPro（Windows）+ LaTeX
 
 ## 协议
 

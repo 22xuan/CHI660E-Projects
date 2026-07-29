@@ -11,7 +11,7 @@
 | **电化学理论** | ORR 反应机理、RDE 质量传输理论、Koutecky-Levich 方程、Tafel 动力学分析、iR 补偿 |
 | **Python 编程** | 数据自动化解析、科学计算（NumPy/SciPy/Pandas）、Matplotlib 可视化、类型注解、模块化设计 |
 | **工程素养** | 多格式兼容、可复现分析流水线、YAML 参数化配置、单元测试、Git 版本控制 |
-| **OriginPro** | originpro API 批量出图、出版级图表设计 |
+| **OriginPro** | originpro API 出图、图生成（Windows） |
 | **项目管理** | 结构化文件组织、CSV 中间格式、LaTeX 学术报告 |
 
 ## 项目结构
@@ -30,7 +30,7 @@ orr/
 │   ├── kl_analysis.py        # 步骤3: K-L拟合 + n值 + Tafel斜率
 │   ├── generate_tables.py    # 步骤4: 催化剂汇总 + 组间对比 (CSV+Markdown)
 │   ├── generate_figures.py   # matplotlib 预览图
-│   └── origin_plot_orr.py    # OriginPro 批量出图 (Windows)
+│   └── origin_plot_orr.py    # OriginPro 出图 (Windows)
 ├── tests/
 │   ├── test_parse.py         # 解析/电位/电流测试
 │   └── test_kl.py            # Levich常数/K-L拟合/n值测试
