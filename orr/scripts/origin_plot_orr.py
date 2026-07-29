@@ -79,15 +79,20 @@ def create_lsv_overlay_plot(wks, group):
         plot.color = COLORS[i % len(COLORS)]
 
         gl.set_xlim(-1.0, 0.4)
-    gl.set_ylim("", "", "Y")
     gl.rescale()
 
     cat_name = CATALYST_NAMES.get(group, group)
-    gl.label(f"{cat_name} - ORR LSV 曲线", title=True)
-    gl.label("Potential (V vs Hg/HgO)", xlabel=True)
-    gl.label("Current Density (mA/cm2)", ylabel=True)
+    gl.label(f"{cat_name} - ORR LSV 曲线")
+    try:
+        gl.label("Potential (V vs Hg/HgO)")
+    except:
+        pass
+    try:
+        gl.label("Current Density (mA/cm2)")
+    except:
+        pass
 
-    out = str(OUTPUT_DIR / f"Fig1_LSV_{group}.png")
+    out = str(OUTPUT_DIR / f"Fig1_LSV_{group}.pdf")
     gp.save_fig(out, width=1600)
     print(f"  图表已保存: {out}")
     return gp
@@ -118,11 +123,17 @@ def create_group_comparison_plot():
 
         gl.set_xlim(-1.0, 0.4)
     gl.rescale()
-    gl.label("催化剂 ORR 性能对比 (@1600 rpm)", title=True)
-    gl.label("Potential (V vs Hg/HgO)", xlabel=True)
-    gl.label("Current Density (mA/cm2)", ylabel=True)
+    gl.label("催化剂 ORR 性能对比 (@1600 rpm)")
+    try:
+        gl.label("Potential (V vs Hg/HgO)")
+    except:
+        pass
+    try:
+        gl.label("Current Density (mA/cm2)")
+    except:
+        pass
 
-    out = str(OUTPUT_DIR / "Fig2_Group_Comparison_1600r.png")
+    out = str(OUTPUT_DIR / "Fig2_Group_Comparison_1600r.pdf")
     gp.save_fig(out, width=1600)
     print(f"  图表已保存: {out}")
 
@@ -156,11 +167,17 @@ def create_kl_plot_with_fit(group):
         plot.color = COLORS[3 - i]
 
     cat_name = CATALYST_NAMES.get(group, group)
-    gl.label(f"{cat_name} - Koutecky-Levich 图", title=True)
-    gl.label("w^(-1/2) (s^(1/2)*rad^(-1/2))", xlabel=True)
-    gl.label("j^(-1) (cm2/mA)", ylabel=True)
+    gl.label(f"{cat_name} - Koutecky-Levich 图")
+    try:
+        gl.label("w^(-1/2) (s^(1/2)*rad^(-1/2))")
+    except:
+        pass
+    try:
+        gl.label("j^(-1) (cm2/mA)")
+    except:
+        pass
 
-    out = str(OUTPUT_DIR / f"Fig3_KL_{group}.png")
+    out = str(OUTPUT_DIR / f"Fig3_KL_{group}.pdf")
     gp.save_fig(out, width=1400)
     print(f"  图表已保存: {out}")
 
@@ -225,7 +242,7 @@ def create_bar_chart():
     axes[2].tick_params(axis="x", rotation=15)
 
     plt.tight_layout()
-    out = str(OUTPUT_DIR / "Fig5_Key_Parameters_Bar.png")
+    out = str(OUTPUT_DIR / "Fig5_Key_Parameters_Bar.pdf")
     plt.savefig(out, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"  图表已保存: {out}")
@@ -283,7 +300,7 @@ def main():
         ax.axhline(y=60, color="red", linestyle="--", alpha=0.5, label="60 mV/dec (4e-)")
         ax.legend()
         plt.tight_layout()
-        out = str(OUTPUT_DIR / "Fig4_Tafel_Comparison.png")
+        out = str(OUTPUT_DIR / "Fig4_Tafel_Comparison.pdf")
         plt.savefig(out, dpi=150, bbox_inches="tight")
         plt.close()
         print(f"  图表已保存: {out}")
