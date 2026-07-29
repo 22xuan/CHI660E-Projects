@@ -58,8 +58,11 @@ def import_lsv_data(sheet, group):
         sheet.from_list(col_y, y_vals, "Y")
 
         col_name = f"{rpm}rpm"
-        sheet.cols[col_y].set_label(col_name)
-        sheet.cols[col_x].set_label(f"E_{rpm}rpm")
+        try:
+            sheet.cols[col_y].set_label(col_name)
+            sheet.cols[col_x].set_label(f"E_{rpm}rpm")
+        except:
+            pass
 
         print(f"  {group} {rpm}r: {len(x_vals)} pts -> col {col_x}(X), {col_y}(Y)")
 
@@ -75,7 +78,7 @@ def create_lsv_overlay_plot(wks, group):
         plot = gl.add_plot(wks, i * 2 + 1, i * 2, type=200)
         plot.color = COLORS[i % len(COLORS)]
 
-    gl.set_xlim(-1.0, 0.4, "X")
+        gl.set_xlim(-1.0, 0.4)
     gl.set_ylim("", "", "Y")
     gl.rescale()
 
@@ -113,7 +116,7 @@ def create_group_comparison_plot():
         plot = gl.add_plot(wks_temp, 1, 0, type=200)
         plot.color = color
 
-    gl.set_xlim(-1.0, 0.4, "X")
+        gl.set_xlim(-1.0, 0.4)
     gl.rescale()
     gl.label("催化剂 ORR 性能对比 (@1600 rpm)", title=True)
     gl.label("Potential (V vs Hg/HgO)", xlabel=True)
