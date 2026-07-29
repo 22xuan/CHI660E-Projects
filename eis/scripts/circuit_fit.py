@@ -172,9 +172,9 @@ def plot_fit(df, result, label, color):
     ax.grid(True, alpha=0.3)
     ax.set_aspect("equal")
     plt.tight_layout()
-    fig.savefig(str(OUT_DIR / f"Fit_{label}.png"))
+    fig.savefig(str(OUT_DIR / f"Fit_{label}.pdf"))
     plt.close()
-    print(f"  Fit_{label}.png")
+    print(f"  Fit_{label}.pdf")
 
 
 def main():

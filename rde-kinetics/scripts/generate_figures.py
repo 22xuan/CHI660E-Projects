@@ -53,9 +53,9 @@ def fig0_polarization() -> None:
         ax.legend(fontsize=8)
         ax.grid(True, alpha=0.3)
         plt.tight_layout()
-        fig.savefig(str(OUTPUT_DIR / f"Fig0_Polarization_{g}.png"))
+        fig.savefig(str(OUTPUT_DIR / f"Fig0_Polarization_{g}.pdf"))
         plt.close()
-        print(f"  Fig0_Polarization_{g}.png")
+        print(f"  Fig0_Polarization_{g}.pdf")
 
 
 def fig1_levich() -> None:
@@ -97,9 +97,9 @@ def fig1_levich() -> None:
     ax2.grid(True, alpha=0.3)
 
     plt.tight_layout()
-    fig.savefig(str(OUTPUT_DIR / "Fig1_Levich.png"))
+    fig.savefig(str(OUTPUT_DIR / "Fig1_Levich.pdf"))
     plt.close()
-    print("  Fig1_Levich.png")
+    print("  Fig1_Levich.pdf")
 
 
 def fig2_concentration() -> None:
@@ -134,9 +134,9 @@ def fig2_concentration() -> None:
         ax.grid(True, alpha=0.3)
 
     plt.tight_layout()
-    fig.savefig(str(OUTPUT_DIR / "Fig2_Concentration.png"))
+    fig.savefig(str(OUTPUT_DIR / "Fig2_Concentration.pdf"))
     plt.close()
-    print("  Fig2_Concentration.png")
+    print("  Fig2_Concentration.pdf")
 
 
 def fig3_kl() -> None:
@@ -181,9 +181,9 @@ def fig3_kl() -> None:
         ax.grid(True, alpha=0.3)
 
         plt.tight_layout()
-        fig.savefig(str(OUTPUT_DIR / f"Fig3_KL_{g}.png"))
+        fig.savefig(str(OUTPUT_DIR / f"Fig3_KL_{g}.pdf"))
         plt.close()
-        print(f"  Fig3_KL_{g}.png")
+        print(f"  Fig3_KL_{g}.pdf")
 
 
 def fig4_tafel() -> None:
@@ -235,9 +235,9 @@ def fig4_tafel() -> None:
         ax.grid(True, alpha=0.3)
 
         plt.tight_layout()
-        fig.savefig(str(OUTPUT_DIR / f"Fig4_Tafel_{g}.png"))
+        fig.savefig(str(OUTPUT_DIR / f"Fig4_Tafel_{g}.pdf"))
         plt.close()
-        print(f"  Fig4_Tafel_{g}.png")
+        print(f"  Fig4_Tafel_{g}.pdf")
 
 
 def fig5_half_wave() -> None:
@@ -271,9 +271,9 @@ def fig5_half_wave() -> None:
         ax.grid(True, alpha=0.3)
 
         plt.tight_layout()
-        fig.savefig(str(OUTPUT_DIR / f"Fig5_HalfWave_{g}.png"))
+        fig.savefig(str(OUTPUT_DIR / f"Fig5_HalfWave_{g}.pdf"))
         plt.close()
-        print(f"  Fig5_HalfWave_{g}.png")
+        print(f"  Fig5_HalfWave_{g}.pdf")
 
 
 def main() -> None:

@@ -19,7 +19,7 @@ if command -v xelatex &> /dev/null && [ -f report/CO2_EIS_报告.tex ]; then
     TMPDIR=$(mktemp -d)
     trap "rm -rf $TMPDIR" EXIT
     cp report/CO2_EIS_报告.tex "$TMPDIR/"
-    cp output/figures/*.png "$TMPDIR/" 2>/dev/null
+    cp output/figures/*.pdf "$TMPDIR/" 2>/dev/null && echo "  PDF 图已复制"
     cd "$TMPDIR"
     xelatex -interaction=nonstopmode CO2_EIS_报告.tex > /dev/null 2>&1
     xelatex -interaction=nonstopmode CO2_EIS_报告.tex > /dev/null 2>&1

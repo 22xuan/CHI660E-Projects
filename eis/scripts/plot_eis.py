@@ -72,9 +72,9 @@ def fig1_nyquist() -> None:
     ax.set_aspect("equal")
 
     plt.tight_layout()
-    fig.savefig(str(OUT_DIR / "Fig1_Nyquist.png"))
+    fig.savefig(str(OUT_DIR / "Fig1_Nyquist.pdf"))
     plt.close()
-    print("  Fig1_Nyquist.png")
+    print("  Fig1_Nyquist.pdf")
 
 
 def fig2_bode() -> None:
@@ -108,9 +108,9 @@ def fig2_bode() -> None:
     fig.suptitle("Bode Plot — Low Alloy Steel CO₂ Corrosion", fontsize=13)
 
     plt.tight_layout()
-    fig.savefig(str(OUT_DIR / "Fig2_Bode.png"))
+    fig.savefig(str(OUT_DIR / "Fig2_Bode.pdf"))
     plt.close()
-    print("  Fig2_Bode.png")
+    print("  Fig2_Bode.pdf")
 
 
 def main() -> None:

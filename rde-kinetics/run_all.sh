@@ -22,21 +22,7 @@ if command -v xelatex &> /dev/null && [ -f report/RDE_分析报告.tex ]; then
     echo " 编译 LaTeX 报告..."
     TMPDIR=$(mktemp -d)
     cp report/RDE_分析报告.tex "$TMPDIR/"
-    python3 -c "
-from PIL import Image
-import os
-src = 'output/figures'
-dst = '$TMPDIR'
-figs = ['Fig0_Polarization_1组.png', 'Fig1_Levich.png', 'Fig2_Concentration.png', 'Fig3_KL_1组.png', 'Fig4_Tafel_1组.png', 'Fig5_HalfWave_1组.png']
-# 注：如需新增图片引用，需同步更新此列表
-for f in figs:
-    fpath = os.path.join(src, f)
-    if os.path.exists(fpath):
-        img = Image.open(fpath)
-        if img.mode == 'RGBA': img = img.convert('RGB')
-        out = os.path.join(dst, f.replace('.png', '.jpg'))
-        img.save(out, 'JPEG', quality=95)
-"
+    cp output/figures/Fig*.pdf "$TMPDIR/" 2>/dev/null
     cd "$TMPDIR"
     LOGFILE="$TMPDIR/xelatex.log"
     xelatex -interaction=nonstopmode RDE_分析报告.tex > "$LOGFILE" 2>&1

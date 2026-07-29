@@ -46,31 +46,16 @@ if command -v xelatex &> /dev/null; then
     trap "rm -rf $TMPDIR" EXIT
     cp report/ORR_RDE_分析报告.tex "$TMPDIR/"
 
-    # 用 Python 读取并转换图片到 ext4 临时目录
-    python3 -c "
-from PIL import Image
-import os
-src = 'output/figures'
-dst = '$TMPDIR'
-figs = [
-    # 注：如需新增图片引用，需同步更新此列表
-    'Fig2_Group_Comparison_1600r.png',
-    'Fig3_KL_1组.png', 'Fig3_KL_2组.png',
-    'Fig4_Tafel_1组.png',
-    'Fig5_Key_Parameters_Bar.png',
-]
-for f in figs:
-    fpath = os.path.join(src, f)
-    if os.path.exists(fpath):
-        img = Image.open(fpath)
-        if img.mode == 'RGBA':
-            img = img.convert('RGB')
-        out = os.path.join(dst, f.replace('.png', '.jpg'))
-        img.save(out, 'JPEG', quality=95)
-        print(f'  {f} -> {f.replace(\".png\", \".jpg\")}')
-    else:
-        print(f'  [警告] 图片不存在: {f}')
-"
+    # 复制 PDF 矢量图到编译目录
+    cp output/figures/Fig*.pdf "$TMPDIR/" 2>/dev/null
+    echo "  PDF 矢量图已复制"
+
+    # 尝试 Windows OriginPro（可选，失败不阻止编译）
+    if command -v powershell.exe &> /dev/null; then
+        powershell.exe -Command "D:\Anaconda\python.exe D:\26214\employment\CHI660E-Projects\orr\scripts\origin_plot_orr.py" > /dev/null 2>&1 && \
+            cp output/figures/Fig*.pdf "$TMPDIR/" 2>/dev/null && echo "  OriginPro 矢量图已更新" || \
+            echo "  跳过 OriginPro（未安装）" 2>/dev/null
+    fi
 
     # 两次编译 (TOC + 交叉引用)，在临时目录内执行
     cd "$TMPDIR"

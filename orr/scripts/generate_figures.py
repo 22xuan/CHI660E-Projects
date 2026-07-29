@@ -103,7 +103,7 @@ def fig1_lsv_overlay(
             ax.invert_xaxis()
 
         plt.tight_layout()
-        out = str(OUTPUT_DIR / f"Fig1_LSV_{group}.png")
+        out = str(OUTPUT_DIR / f"Fig1_LSV_{group}.pdf")
         fig.savefig(out)
         plt.close(fig)
         print(f"  {out}")
@@ -141,7 +141,7 @@ def fig2_catalyst_comparison(
     ax.axhline(y=0, color="gray", ls="--", alpha=0.3)
     ax.invert_xaxis()
 
-    out = str(OUTPUT_DIR / "Fig2_Group_Comparison_1600r.png")
+    out = str(OUTPUT_DIR / "Fig2_Group_Comparison_1600r.pdf")
     fig.savefig(out)
     plt.close(fig)
     print(f"  {out}")
@@ -198,7 +198,7 @@ def fig3_kl_plots(
         ax.legend(fontsize=7.5)
         ax.grid(True, alpha=0.3)
 
-        out = str(OUTPUT_DIR / f"Fig3_KL_{group}.png")
+        out = str(OUTPUT_DIR / f"Fig3_KL_{group}.pdf")
         fig.savefig(out)
         plt.close(fig)
         print(f"  {out}")
@@ -271,7 +271,7 @@ def fig4_tafel(
         ax.grid(True, alpha=0.3)
         ax.invert_xaxis()
 
-        out = str(OUTPUT_DIR / f"Fig4_Tafel_{group}.png")
+        out = str(OUTPUT_DIR / f"Fig4_Tafel_{group}.pdf")
         fig.savefig(out)
         plt.close(fig)
         print(f"  {out}")
@@ -343,7 +343,7 @@ def fig5_bar_chart(params: Dict[str, Any]) -> None:
         axes[2].text(i, v + e + 0.1, f"{v:.1f}", ha="center", fontsize=8)
 
     plt.tight_layout()
-    out = str(OUTPUT_DIR / "Fig5_Key_Parameters_Bar.png")
+    out = str(OUTPUT_DIR / "Fig5_Key_Parameters_Bar.pdf")
     fig.savefig(out)
     plt.close(fig)
     print(f"  {out}")
